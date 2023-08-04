@@ -25,7 +25,7 @@ class CreateRunFiles(object):
     dwa = False
     real_dwa = False
     extra_sampling = True
-    world_name = "swarmlab"
+    world_name = "sim"
     settings = None
     visualize = False
     num_repetitions = 50
@@ -98,7 +98,7 @@ class CreateRunFiles(object):
 
     def create_world_file(self):
         with open(self.output_dir + '/world/' + self.world_name + '_created.world', 'w') as self.worldFileNew:
-            with open(self.output_dir + '/world/' + self.world_name + '_template.world', 'r') as temp_world:
+            with open(self.output_dir + '/world/' + self.world_name + '_map.world', 'r') as temp_world:
                 self.worldFileNew.write(temp_world.read())
 
             direct = commands.getoutput('rospack find stage')

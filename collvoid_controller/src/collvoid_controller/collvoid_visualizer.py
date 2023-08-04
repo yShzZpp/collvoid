@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import rospy
 import tf.transformations
 import math
@@ -49,6 +50,50 @@ class RobotVisualizer(object):
                 self.publish_robots()
             rate.sleep()
 
+def get_robot_color(robot):
+    marker = Marker()
+    marker.color.a = 1.0  # 设置透明度为1.0，表示不透明
+
+    if robot == "robot_0":
+        marker.color.r = 1.0
+        marker.color.g = 0.0
+        marker.color.b = 0.0
+    elif robot == "robot_1":
+        marker.color.r = 0.439216
+        marker.color.g = 0.501961
+        marker.color.b = 0.564706
+    elif robot == "robot_2":
+        marker.color.r = 0.827451
+        marker.color.g = 0.827451
+        marker.color.b = 0.827451
+    elif robot == "robot_3":
+        marker.color.r = 0.282353
+        marker.color.g = 0.239216
+        marker.color.b = 0.545098
+    elif robot == "robot_4":
+        marker.color.r = 0.254902
+        marker.color.g = 0.411765
+        marker.color.b = 0.882353
+    elif robot == "robot_5":
+        marker.color.r = 0.529412
+        marker.color.g = 0.807843
+        marker.color.b = 0.980392
+    elif robot == "robot_6":
+        marker.color.r = 0.686275
+        marker.color.g = 0.933333
+        marker.color.b = 0.933333
+    elif robot == "robot_7":
+        marker.color.r = 0.372549
+        marker.color.g = 0.619608
+        marker.color.b = 0.627451
+    else:
+        # 默认颜色为黑色
+        marker.color.r = 0.0
+        marker.color.g = 0.0
+        marker.color.b = 0.0
+
+    return marker.color
+
 
 def create_marker(robot_msg):
     assert isinstance(robot_msg, PoseTwistWithCovariance)
@@ -70,8 +115,7 @@ def create_marker(robot_msg):
         pose_marker.scale.y = 2 * RADIUS
 
     pose_marker.scale.z = 0.1
-    pose_marker.color.r = 1.0
-    pose_marker.color.a = 1.0
+    pose_marker.color = get_robot_color(robot_msg.robot_id)
     pose_marker.id = 0
     pose_marker.pose = robot_msg.pose.pose
     markers.append(pose_marker)
