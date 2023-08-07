@@ -183,10 +183,10 @@ class CreateRunFiles(object):
 
             if self.run_experiments and not self.visualize:
                 f_launch.write(
-                    '  <node pkg="stage_ros" type="stageros" name="stageros" args="-g $(find collvoid_stage)/world/' + self.world_name + '_created.world" respawn="false" output="screen" />\n')
+                    '  <node pkg="stage_ros" type="stageros" name="stageros" args="-g $(find collvoid_stage)/world/' + self.world_name + '_created.world" respawn="true" output="screen" />\n')
             else:
                 f_launch.write(
-                    '  <node pkg="stage_ros" type="stageros" name="stageros" args="$(find collvoid_stage)/world/' + self.world_name + '_created.world" respawn="false" output="screen" />\n')
+                    '  <node pkg="stage_ros" type="stageros" name="stageros" args="$(find collvoid_stage)/world/' + self.world_name + '_created.world" respawn="true" output="screen" />\n')
 
             type_name = "turtle"
             if self.omni:
@@ -238,14 +238,14 @@ class CreateRunFiles(object):
                 f_launch.write('  </node>\n')
                 if self.visualize:
                     f_launch.write(
-                        '  <node pkg="collvoid_controller" type="collvoid_visualizer.py" name="controller_viz" output="screen"/>\n')
+                        '  <node pkg="collvoid_controller" type="collvoid_visualizer.py" name="controller_viz" respawn="true" output="screen"/>\n')
                     f_launch.write(
                         '  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find collvoid_stage)/multi_view.rviz" output="screen" />\n')
             else:
                 f_launch.write(
-                    '  <node pkg="collvoid_controller" type="controller.py" name="controller" output="screen"/>\n')
+                    '  <node pkg="collvoid_controller" type="controller.py" name="controller" respawn="true" output="screen"/>\n')
                 f_launch.write(
-                    '  <node pkg="collvoid_controller" type="collvoid_visualizer.py" name="controller_viz" output="screen"/>\n')
+                    '  <node pkg="collvoid_controller" type="collvoid_visualizer.py" name="controller_viz" respawn="true" output="screen"/>\n')
                 f_launch.write(
                     '  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find collvoid_stage)/multi_view.rviz" output="screen" />\n')
 
