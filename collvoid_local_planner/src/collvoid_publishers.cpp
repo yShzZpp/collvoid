@@ -59,6 +59,71 @@ namespace collvoid {
         speed_pub.publish(line_list);
     }
 
+    visualization_msgs::Marker::_color_type getRobotColor()
+    {
+      visualization_msgs::Marker::_color_type color;
+      ros::NodeHandle nh;
+      // delete all '/'
+      std::string robotId = nh.getNamespace().substr(1);
+      robotId.erase(std::remove_if(robotId.begin(), robotId.end(), [](char c)
+                                   { return c == '/'; }),
+                    robotId.end());
+      if (robotId == "robot_0")
+      {
+        color.r = 1.0;
+        color.g = 0.0;
+        color.b = 0.0;
+      }
+      else if (robotId == "robot_1")
+      {
+        color.r = 0.439216;
+        color.g = 0.501961;
+        color.b = 0.564706;
+      }
+      else if (robotId == "robot_2")
+      {
+        color.r = 0.827451;
+        color.g = 0.827451;
+        color.b = 0.827451;
+      }
+      else if (robotId == "robot_3")
+      {
+        color.r = 0.282353;
+        color.g = 0.239216;
+        color.b = 0.545098;
+      }
+      else if (robotId == "robot_4")
+      {
+        color.r = 0.254902;
+        color.g = 0.411765;
+        color.b = 0.882353;
+      }
+      else if (robotId == "robot_5")
+      {
+        color.r = 0.529412;
+        color.g = 0.807843;
+        color.b = 0.980392;
+      }
+      else if (robotId == "robot_6")
+      {
+        color.r = 0.686275;
+        color.g = 0.933333;
+        color.b = 0.933333;
+      }
+      else if (robotId == "robot_7")
+      {
+        color.r = 0.372549;
+        color.g = 0.619608;
+        color.b = 0.627451;
+      }
+      else
+      {
+        color.r = 0.0;
+        color.g = 0.0;
+        color.b = 0.0;
+      }
+      return color;
+    }
 
     void publishVOs(Vector2 &pos, const std::vector<VO> &truncated_vos, bool use_truncation, std::string target_frame,
                     std::string name_space, ros::Publisher vo_pub) {
@@ -70,7 +135,7 @@ namespace collvoid {
         line_list.pose.orientation.w = 1.0;
         line_list.type = visualization_msgs::Marker::LINE_LIST;
         line_list.scale.x = 0.015;
-        line_list.color.r = 1.0;
+        line_list.color = getRobotColor();
         line_list.color.a = 1.0;
         line_list.id = 0;
         if (!use_truncation) {
@@ -149,7 +214,7 @@ namespace collvoid {
         sphere.scale.x = 0.1;
         sphere.scale.y = 0.1;
         sphere.scale.z = 0.1;
-        sphere.color.r = 0.5;
+        sphere.color = getRobotColor();
         sphere.color.a = 1.0;
         sphere.id = 0;
         for (int i = 0; i < (int) points.size(); i++) {

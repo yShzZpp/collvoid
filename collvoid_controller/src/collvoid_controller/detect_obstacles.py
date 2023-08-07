@@ -6,7 +6,7 @@ from sensor_msgs.msg import LaserScan, PointCloud
 import tf
 import tf.transformations
 import cv2
-import cv2.cv
+#  import cv2.cv
 import numpy as np
 from threading import Lock
 
@@ -123,7 +123,7 @@ class DetectObstacles(object):
     def create_bounding_box_from_points(points):
         h = cv2.convexHull(np.array(points))
         rect = cv2.minAreaRect(h)
-        box = cv2.cv.BoxPoints(rect)
+        box = cv2.boxPoints(rect)
         box = np.int32(box)
         return box
 
@@ -153,7 +153,7 @@ class DetectObstacles(object):
         if len(current_list) > 2:
             h = cv2.convexHull(np.array(current_list))
             rect = cv2.minAreaRect(h)
-            box = cv2.cv.BoxPoints(rect)
+            box = cv2.boxPoints(rect)
             box = np.int32(box)
             vec1 = box[1] - box[2]
             vec2 = box[2] - box[3]
