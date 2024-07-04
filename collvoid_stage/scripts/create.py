@@ -175,6 +175,7 @@ class CreateRunFiles(object):
             f_launch.write(
                 '  <node name="map_server" pkg="map_server" type="map_server" args="$(find collvoid_stage)/world/' + self.world_name + '_map.yaml"/>\n')
             f_launch.write('  <rosparam command="load" file="$(find collvoid_stage)/params/stage_params.yaml"/>\n')
+            f_launch.write('  <rosparam command="load" file="$(find collvoid_stage)/goals.yaml"/>\n')
 
             if self.settings is not None:
                 f_launch.write('  <rosparam command="load" file="$(find collvoid_stage)/' +self.yamlfile + '"/>\n')

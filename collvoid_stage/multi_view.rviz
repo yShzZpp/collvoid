@@ -4,6 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /Robot_01
         - /Robot_01/VOs1
         - /FoundRobots1/Namespaces1
       Splitter Ratio: 0.5
@@ -248,7 +249,7 @@ Visualization Manager:
           Marker Topic: /robot_0/vo
           Name: VOs
           Namespaces:
-            collvoid: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -256,7 +257,7 @@ Visualization Manager:
           Marker Topic: /robot_0/samples
           Name: Samples
           Namespaces:
-            collvoid: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/Marker
@@ -272,7 +273,7 @@ Visualization Manager:
           Marker Topic: /robot_0/obstacles
           Name: Obstacles
           Namespaces:
-            collvoid: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/Marker
@@ -280,19 +281,29 @@ Visualization Manager:
           Marker Topic: /robot_0/speed
           Name: HoloSpeed
           Namespaces:
-            collvoid: true
+            {}
           Queue Size: 100
           Value: true
         - Alpha: 0.699999988
           Class: rviz/Map
           Color Scheme: costmap
           Draw Behind: false
-          Enabled: false
+          Enabled: true
           Name: Costmap
           Topic: /robot_0/move_base/local_costmap/costmap
           Unreliable: false
           Use Timestamp: false
-          Value: false
+          Value: true
+        - Alpha: 0.699999988
+          Class: rviz/Map
+          Color Scheme: costmap
+          Draw Behind: false
+          Enabled: true
+          Name: Costmap
+          Topic: /robot_0/move_base/global_costmap/costmap
+          Unreliable: false
+          Use Timestamp: false
+          Value: true
         - Alpha: 1
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
@@ -316,7 +327,7 @@ Visualization Manager:
           Queue Size: 10
           Selectable: true
           Size (Pixels): 3
-          Size (m): 0.00999999978
+          Size (m): 0.0500000007
           Style: Flat Squares
           Topic: /robot_0/base_scan
           Unreliable: false
@@ -380,7 +391,7 @@ Visualization Manager:
           Buffer Length: 1
           Class: rviz/Path
           Color: 255; 0; 0
-          Enabled: true
+          Enabled: false
           Head Diameter: 0.300000012
           Head Length: 0.200000003
           Length: 0.300000012
@@ -398,7 +409,7 @@ Visualization Manager:
           Shaft Length: 0.100000001
           Topic: /robot_0/move_base/NavfnROS/plan
           Unreliable: false
-          Value: true
+          Value: false
       Enabled: true
       Name: Robot_0
     - Class: rviz/Group
@@ -454,7 +465,7 @@ Visualization Manager:
           Marker Topic: /robot_1/vo
           Name: VOs
           Namespaces:
-            collvoid: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -462,7 +473,7 @@ Visualization Manager:
           Marker Topic: /robot_1/samples
           Name: Samples
           Namespaces:
-            collvoid: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/Marker
@@ -637,7 +648,7 @@ Visualization Manager:
           Marker Topic: /robot_2/vo
           Name: VOs
           Namespaces:
-            collvoid: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -1003,7 +1014,7 @@ Visualization Manager:
           Marker Topic: /robot_3/vo
           Name: VOs
           Namespaces:
-            collvoid: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -1733,7 +1744,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 24.4592762
+      Distance: 15.5022621
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1

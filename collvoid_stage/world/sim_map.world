@@ -33,7 +33,7 @@ map
 define hokuyo ranger
 (
   sensor(
-    range [0.0 4.0]
+    range [0.0 20.0]
     fov 270
     samples 270
     size [ 0.05 0.05 0.1 ]
@@ -49,7 +49,7 @@ define roomba position
   gui_nose 1
 
   # This block approximates the circular shape of a Roomba
-  hokuyo( pose [0 0 0.1 0] )
+  hokuyo( pose [0 0 -0.1 0.0] )
   drive "diff"
   bitmap "robot.png"
 )
@@ -114,6 +114,16 @@ define obst model
   origin [0 0 0 0]
   gui_nose 1
 )
+
+define cube_model model
+(
+  size [1.000 1.000 1.000]
+  shape "cube"
+  color "gray"
+)
+
+cube_model( pose [ -4.797 3.743 0.000 0.000 ] name "cube_0" )
+
 
 #obst( pose [ 0.0 0.0 0 45.000000 ] name "block" color "black")
 

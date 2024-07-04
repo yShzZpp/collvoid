@@ -130,9 +130,11 @@ class CreateRandomGoals(object):
         else:
             file_name = os.path.join(self.output_dir,
                                      "_".join( ['goals', 'robots', str(self.num_robots), 'obstacles', str(self.num_obstacles), str(self.seed), 'created.yaml']))
+        file_name = self.output_dir + "/goals.yaml";
 
         with open(file_name, 'w') as f:
             yaml.dump(yaml_file, f)
+        print file_name
 
     def check_if_valid(self, pos, current_conf, init_conf=None, n=0):
         if pos is None:

@@ -51,6 +51,9 @@ class Controller(wx.Frame):
         sizer.Add(static_sizer, 0)
 
         self.choiceBox = wx.Choice(self, wx.ID_ANY, choices=self.robotList)
+        #  defaultIndex = self.choiceBox.index("all")
+        defaultIndex = 0
+        self.choiceBox.SetSelection(defaultIndex)
 
         grid_sizer.Add(self.choiceBox, (0, 0), (1, 2), wx.EXPAND)
         self.SetPosition(wx.Point(200, 200))
