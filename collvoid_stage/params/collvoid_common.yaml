@@ -6,4 +6,3 @@ trunc_time: 10.0
 
 use_truncation: true
 use_polygon_footprint: true # true #footprint or radius
-

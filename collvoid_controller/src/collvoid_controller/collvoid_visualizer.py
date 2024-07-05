@@ -146,7 +146,7 @@ class RobotVisualizer(object):
                 pose1_marker.id = 11
                 pose1_marker.pose.position.x = robot_msg.pose.pose.position.x + self.width /  (2 * self.ncircles) * math.cos(theta)
                 pose1_marker.pose.position.y = robot_msg.pose.pose.position.y + self.length / (2 * self.ncircles) * math.sin(theta)
-                markers.append(pose1_marker)
+                #  markers.append(pose1_marker)
                 pose2_marker.id = 22
                 pose2_marker.pose.position.x = robot_msg.pose.pose.position.x - self.width / (2 * self.ncircles) * math.cos(theta)
                 pose2_marker.pose.position.y = robot_msg.pose.pose.position.y - self.length / (2 * self.ncircles) * math.sin(theta)

@@ -23,8 +23,8 @@ DWAPlannerROS:
   acc_lim_y: 0.0      # diff drive robot
 
   # Goal Tolerance Parameters
-  yaw_goal_tolerance: 0.3  # 0.05
-  xy_goal_tolerance: 0.15  # 0.10
+  yaw_goal_tolerance: 0.1  # 0.05
+  xy_goal_tolerance: 0.1  # 0.10
   # latch_xy_goal_tolerance: false
 
   # Forward Simulation Parameters
@@ -98,17 +98,17 @@ CollvoidLocalPlanner:
   robot_radius: 0.20
 
 max_planning_retries: 5
-# controller_frequency: 10.0    #5.0
-# controller_patience: 0.0      #局部规划失败时间
+controller_frequency: 10.0    #5.0
+controller_patience: 0.0      #局部规划失败时间
 #
-# planner_frequency: 5.0        #1.0
-# planner_patience: 2.0         #全局规划失败时间
+planner_frequency: 5.0        #1.0
+planner_patience: 5.0         #全局规划失败时间
 #
-# oscillation_timeout: 1.0     #震荡的时间
-# oscillation_distance: 0.15   #震荡距离
+oscillation_timeout: 15.0     #震荡的时间
+oscillation_distance: 0.15   #震荡距离
 
 #global_planner_frequency: 1
-#shutdown_costmaps: true
+shutdown_costmaps: false
 
 NavfnROS:
   default_tolerance: 0.3
@@ -125,7 +125,7 @@ conservative_reset:
   reset_distance: 2.0
 
 aggressive_reset:
-  layer_names: ["stationary_robots"]
+  layer_names: ["stationary_robots", "obstacle_layer"]
   reset_distance: 0.38
 
 really_aggressive_reset:
@@ -133,7 +133,7 @@ really_aggressive_reset:
   reset_distance: 0.25
  
 local_costmap:
-  global_frame: map
+  global_frame: odom
   robot_base_frame: base_footprint
   update_frequency: 3.0
   publish_frequency: 2.0
@@ -150,7 +150,7 @@ local_costmap:
   inflation_layer:
     enabled:              true
     cost_scaling_factor:  10.0  # exponential rate at which the obstacle cost drops off (default: 10)
-    inflation_radius:     0.25  # was 0.26 in previoys configuration
+    inflation_radius:     0.5  # was 0.26 in previoys configuration
 
 
 
@@ -169,6 +169,6 @@ global_costmap:
   inflation_layer:
     enabled:              true
     cost_scaling_factor:  10.0  # exponential rate at which the obstacle cost drops off (default: 10)
-    inflation_radius:     0.26  # was 0.26 in previoys configuration
+    inflation_radius:     0.8  # was 0.26 in previoys configuration
 
 

@@ -48,7 +48,7 @@ private:
 
 
     //Agent description
-    std::string my_id_;
+    std::string my_id_, robotType_;
     std::string base_frame_, global_frame_;
     bool use_polygon_footprint_, holo_robot_, controlled_;
     Vector2 holo_velocity_;

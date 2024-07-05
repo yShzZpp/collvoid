@@ -1,11 +1,32 @@
-map_type: costmap
+map_type: voxel
 #Set the tolerance we're willing to have for tf transforms
 transform_tolerance: 0.3
 
 #footprint: [[-0.325, -0.325], [-0.325, 0.325], [0.325, 0.325], [0.46, 0.0], [0.325, -0.325]]
-robot_radius: 0.22
+footprint: [[0.40, 0.26], [-0.40, 0.26], [-0.40, -0.26], [0.40, -0.26]]  # if the robot is not circular
+# robot_radius: 0.22
+footprint_nobox:
+ - {area_bit: 0, area: [[0.21, 0.32],   [0.42, 0.1]]}
+ - {area_bit: 1, area: [[-0.21, 0.32],  [0.42, 0.1]]}
+ - {area_bit: 2, area: [[-0.45, 0.185],  [0.1, -0.37]]}
+ - {area_bit: 3, area: [[-0.45, -0.185], [0.1, -0.37]]}
+ - {area_bit: 4, area: [[-0.21, -0.32], [0.42, 0.1]]}
+ - {area_bit: 5, area: [[0.21, -0.32],  [0.42, 0.1]]}
+ - {area_bit: 6, area: [[0.45, -0.16],  [0.16,  0.34]]}
+ - {area_bit: 7, area: [[0.45, 0.16],   [0.16, -0.34]]}
 
-footprint_padding: 0.0
+# 带箱子Recovery footprint
+footprint_withbox:
+ - {area_bit: 0, area: [[0.23, 0.33],   [0.46, 0.12]]}
+ - {area_bit: 1, area: [[-0.23, 0.33],  [0.46, 0.12]]}
+ - {area_bit: 2, area: [[-0.45, 0.16],  [0.12, -0.32]]}
+ - {area_bit: 3, area: [[-0.45, -0.16], [0.12, -0.32]]}
+ - {area_bit: 4, area: [[-0.23, -0.33], [0.46, 0.12]]}
+ - {area_bit: 5, area: [[0.23, -0.33],  [0.46, 0.12]]}
+ - {area_bit: 6, area: [[0.45, -0.16],  [0.18,  0.32]]}
+ - {area_bit: 7, area: [[0.45, 0.16],   [0.18, -0.32]]}
+
+footprint_padding: 0.02
 
 static_layer:
   enabled:              true

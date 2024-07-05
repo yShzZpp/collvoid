@@ -58,6 +58,7 @@ void MePublisher::init(ros::NodeHandle nh, tf::TransformListener *tf) {
     ROS_INFO("My name is: %s, Eps: %f", my_id_.c_str(), eps_);
     getParam(private_nh, "use_polygon_footprint", &use_polygon_footprint_);
     getParam(private_nh, "holo_robot", &holo_robot_);
+    getParam(private_nh, "/robot_attribute/type", &robotType_);
     controlled_ = getParamDef(private_nh, "controlled", true);
 
     publish_me_period_ = getParamDef(private_nh, "publish_me_frequency", 10.0);
@@ -195,7 +196,7 @@ bool MePublisher::createMeMsg(collvoid_msgs::PoseTwistWithCovariance &me_msg, st
     me_msg.holonomic_velocity.x = holo_velocity_.x();
     me_msg.holonomic_velocity.y = holo_velocity_.y();
 
-    me_msg.holo_robot = holo_robot_;
+    me_msg.holo_robot = holo_robot_; //是否全向运动
     me_msg.radius = (float)(uninflated_robot_radius_ + cur_loc_unc_radius_);
     me_msg.robot_id = my_id_;
     me_msg.controlled = controlled_;
@@ -334,7 +335,8 @@ geometry_msgs::PolygonStamped MePublisher::createFootprintMsgFromVector2(const s
 
 
 void MePublisher::getFootprint(ros::NodeHandle private_nh){
-    getParam(private_nh, "robot_radius", &uninflated_robot_radius_);
+    if (robotType_ != "candle")
+      getParam(private_nh, "robot_radius", &uninflated_robot_radius_); //非烛光则读取robot_radius
     radius_ = uninflated_robot_radius_;
     std::string full_param_name;
     std::vector< geometry_msgs::Point > footprint;
