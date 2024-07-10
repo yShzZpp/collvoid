@@ -56,8 +56,10 @@
 #include <base_local_planner/latched_stop_rotate_controller.h>
 
 #include <base_local_planner/odometry_helper_ros.h>
+#include "cti_spdlog.h"
 
 #include <collvoid_dwa_local_planner/dwa_planner.h>
+
 
 namespace collvoid_dwa_local_planner
 {

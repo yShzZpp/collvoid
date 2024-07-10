@@ -101,6 +101,7 @@ namespace collvoid_dwa_local_planner
     {
         if (! isInitialized()) {
             ros::NodeHandle private_nh("~/" + name);
+            SPDLOG_INFO("[{}] Initializing {}", __func__, name);
             g_plan_pub_ = private_nh.advertise<nav_msgs::Path>("global_plan", 1);
             l_plan_pub_ = private_nh.advertise<nav_msgs::Path>("local_plan", 1);
             tf_ = tf;
@@ -117,6 +118,7 @@ namespace collvoid_dwa_local_planner
             dp_ = boost::shared_ptr<DWAPlanner>(new DWAPlanner(name, &planner_util_));
 
             if (private_nh.getParam("odom_topic", odom_topic_)) {
+                SPDLOG_INFO("Subscribing to {} for odometry data", odom_topic_);
                 odom_helper_.setOdomTopic(odom_topic_);
             }
 
@@ -214,6 +216,7 @@ namespace collvoid_dwa_local_planner
         delete world_model_;
     }
 
+    // 计算速度
     bool DWAPlannerROS::dwaComputeVelocityCommands(tf::Stamped<tf::Pose> &global_pose, geometry_msgs::Twist &cmd_vel)
     {
         // dynamic window sampling approach to get useful velocity commands
@@ -296,7 +299,7 @@ namespace collvoid_dwa_local_planner
 
         std::vector<geometry_msgs::PoseStamped> transformed_plan;
 
-        if (!planner_util_.getLocalPlan(current_pose_, transformed_plan)) {
+        if (!planner_util_.getLocalPlan(current_pose_, transformed_plan)) { // 获取在local_costmap范围内的plan，并转换到local_planner的坐标系下
             ROS_ERROR("Could not get local plan");
             return false;
         }
@@ -353,6 +356,7 @@ namespace collvoid_dwa_local_planner
             return isOk;
         }
     }
+    // 描述：判断路径是否有障碍物
     bool DWAPlannerROS::freeOfObstacles(const tf::Stamped<tf::Pose>& robot_pose,
                                         const std::vector<geometry_msgs::PoseStamped>& trajectory, double& distance) {
         for (size_t i = 0; i < trajectory.size(); ++i) {

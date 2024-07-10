@@ -1,0 +1,10 @@
+image: 1_Q.png
+image_png: /tmp/tmpmap/2024_03_03_16_38/map_image.png
+resolution: 0.05
+origin: [-135.563919, -14.636715, 0.0]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+floor: floorName
+building: buildingName
+hash: 59fa2cff0962d3bda21176d46de2c3b7

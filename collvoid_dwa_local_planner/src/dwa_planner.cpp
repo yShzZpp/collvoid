@@ -62,7 +62,7 @@ void DWAPlanner::reconfigure(DWAPlannerConfig &config)
                              sim_period_);
 
     double resolution = planner_util_->getCostmap()->getResolution();
-    pdist_scale_ = config.path_distance_bias;
+    pdist_scale_ = config.path_distance_bias; // 坚持在全局路径上的权重
     // pdistscale used for both path and alignment, set  forward_point_distance to zero to discard alignment
     path_costs_.setScale(resolution * pdist_scale_ * 0.5);
     alignment_costs_.setScale(resolution * pdist_scale_ * 0.5);
@@ -87,7 +87,7 @@ void DWAPlanner::reconfigure(DWAPlannerConfig &config)
     path_alignment_cost_.setScale(path_scale_);
 
     // obstacle costs can vary due to scaling footprint feature
-    obstacle_costs_.setParams(config.max_trans_vel, config.max_scaling_factor, config.scaling_speed);
+    obstacle_costs_.setParams(config.max_trans_vel, config.max_scaling_factor, config.scaling_speed); // 最大水平速度，最大缩放因子，缩放速度
 
     int vx_samp, vy_samp, vth_samp;
     vx_samp = config.vx_samples;
@@ -261,6 +261,10 @@ bool DWAPlanner::checkTrajectory(Eigen::Vector3f pos,
 }
 
 
+/**
+ * 目的是更新全局路径和局部成本
+ * 设置全局路径，计算全局路径的成本
+ */
 void DWAPlanner::updatePlanAndLocalCosts(tf::Stamped<tf::Pose> global_pose,
                                          const std::vector<geometry_msgs::PoseStamped> &new_plan)
 {
@@ -291,6 +295,7 @@ void DWAPlanner::updatePlanAndLocalCosts(tf::Stamped<tf::Pose> global_pose,
         // path for the robot center. Choosing the final position after
         // turning towards goal orientation causes instability when the
         // robot needs to make a 180 degree turn at the end
+        // 稍微走远一点
         std::vector<geometry_msgs::PoseStamped> front_global_plan = global_plan_;
         double angle_to_goal = atan2(goal_pose.pose.position.y - pos[1], goal_pose.pose.position.x - pos[0]);
         front_global_plan.back().pose.position.x = front_global_plan.back().pose.position.x +
@@ -302,16 +307,16 @@ void DWAPlanner::updatePlanAndLocalCosts(tf::Stamped<tf::Pose> global_pose,
 
 
         // keeping the nose on the path
-        if (sq_dist > forward_point_distance_ * forward_point_distance_ ) {
+        if (sq_dist > forward_point_distance_ * forward_point_distance_ ) { // 离目标点大于forward_point_distance_ * forward_point_distance_时，设置对齐成本
             double resolution = planner_util_->getCostmap()->getResolution();
-            alignment_costs_.setScale(resolution * pdist_scale_ * 0.5);
+            alignment_costs_.setScale(resolution * pdist_scale_ * 0.5); // 坚持在全局路径上的权重
             // costs for robot being aligned with path (nose on path, not ju
             alignment_costs_.setTargetPoses(global_plan_);
-        } else {
+        } else { // 关闭对齐成本
             // once we are close to goal, trying to keep the nose close to anything destabilizes behavior.
             alignment_costs_.setScale(0.0);
         }
-    if (sq_dist > goal_heading_sq_dist_) {
+    if (sq_dist > goal_heading_sq_dist_) { // 离目标点大于目标点的距离时，关闭对目标点的对齐成本
         goal_alignment_cost_.setScale(0);
 
     }
@@ -336,13 +341,14 @@ base_local_planner::Trajectory DWAPlanner::findBestPath(tf::Stamped<tf::Pose> gl
     //make sure that our configuration doesn't change mid-run
     boost::mutex::scoped_lock l(configuration_mutex_);
 
-    Eigen::Vector3f pos(global_pose.getOrigin().getX(), global_pose.getOrigin().getY(), tf::getYaw(global_pose.getRotation()));
-    Eigen::Vector3f vel(global_vel.getOrigin().getX(), global_vel.getOrigin().getY(), tf::getYaw(global_vel.getRotation()));
+    Eigen::Vector3f pos(global_pose.getOrigin().getX(), global_pose.getOrigin().getY(), tf::getYaw(global_pose.getRotation())); // 当前位置
+    Eigen::Vector3f vel(global_vel.getOrigin().getX(), global_vel.getOrigin().getY(), tf::getYaw(global_vel.getRotation())); // 当前速度
     geometry_msgs::PoseStamped goal_pose = global_plan_.back();
-    Eigen::Vector3f goal(goal_pose.pose.position.x, goal_pose.pose.position.y, tf::getYaw(goal_pose.pose.orientation));
+    Eigen::Vector3f goal(goal_pose.pose.position.x, goal_pose.pose.position.y, tf::getYaw(goal_pose.pose.orientation)); // 目标位置
     base_local_planner::LocalPlannerLimits limits = planner_util_->getCurrentLimits();
 
     // prepare cost functions and generators for this run
+    // 初始化所有的采样点
     generator_.initialise(pos,
         vel,
         goal,

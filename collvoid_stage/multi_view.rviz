@@ -4,9 +4,12 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /FoundRobots1/Namespaces1
-      Splitter Ratio: 0.5
-    Tree Height: 750
+        - /Robot_01
+        - /Robot_01/Samples1/Namespaces1
+        - /Robot_01/dwa1
+        - /Robot_21/dwa1
+      Splitter Ratio: 0.472602725
+    Tree Height: 778
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -125,75 +128,7 @@ Visualization Manager:
           Unreliable: false
           Value: true
       Enabled: true
-      Name: Polygon
-    - Class: rviz/Marker
-      Enabled: false
-      Marker Topic: /robot_0/obstacles
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: false
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: PointCloud2
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.00999999978
-      Style: Flat Squares
-      Topic: /robot_1/move_base/DWAPlannerROS/trajectory_cloud
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: false
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: goal_cost
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: false
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 192
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: PointCloud2
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.00999999978
-      Style: Flat Squares
-      Topic: /robot_1/stationary_robots
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: false
+      Name: footprint
     - Class: rviz/Group
       Displays:
         - Class: rviz/Marker
@@ -213,13 +148,13 @@ Visualization Manager:
           Queue Size: 100
           Value: true
         - Class: rviz/Marker
-          Enabled: false
+          Enabled: true
           Marker Topic: /robot_0/orca_lines
           Name: ORCA lines
           Namespaces:
             {}
           Queue Size: 100
-          Value: false
+          Value: true
         - Class: rviz/Marker
           Enabled: true
           Marker Topic: /robot_0/obstacles
@@ -278,7 +213,7 @@ Visualization Manager:
           Color: 255; 255; 255
           Color Transformer: Intensity
           Decay Time: 0
-          Enabled: false
+          Enabled: true
           Invert Rainbow: false
           Max Color: 255; 255; 255
           Max Intensity: 4096
@@ -295,7 +230,7 @@ Visualization Manager:
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
-          Value: false
+          Value: true
         - Class: rviz/MarkerArray
           Enabled: false
           Marker Topic: /robot_0/neighbors
@@ -347,13 +282,13 @@ Visualization Manager:
             - Alpha: 1
               Buffer Length: 1
               Class: rviz/Path
-              Color: 255; 85; 255
+              Color: 255; 0; 0
               Enabled: true
               Head Diameter: 0.300000012
               Head Length: 0.200000003
               Length: 0.300000012
-              Line Style: Lines
-              Line Width: 0.0299999993
+              Line Style: Billboards
+              Line Width: 0.100000001
               Name: LocalPlan
               Offset:
                 X: 0
@@ -370,13 +305,13 @@ Visualization Manager:
             - Alpha: 1
               Buffer Length: 1
               Class: rviz/Path
-              Color: 255; 85; 255
+              Color: 255; 46; 19
               Enabled: true
               Head Diameter: 0.300000012
               Head Length: 0.200000003
               Length: 0.300000012
               Line Style: Lines
-              Line Width: 0.0299999993
+              Line Width: 0.100000001
               Name: GlobalPlan
               Offset:
                 X: 0
@@ -396,7 +331,7 @@ Visualization Manager:
           Displays:
             - Alpha: 0.699999988
               Class: rviz/Map
-              Color Scheme: costmap
+              Color Scheme: map
               Draw Behind: false
               Enabled: true
               Name: local
@@ -406,74 +341,58 @@ Visualization Manager:
               Value: true
             - Alpha: 0.699999988
               Class: rviz/Map
-              Color Scheme: costmap
+              Color Scheme: map
               Draw Behind: false
-              Enabled: true
+              Enabled: false
               Name: global
               Topic: /robot_0/move_base/global_costmap/costmap
               Unreliable: false
               Use Timestamp: false
-              Value: true
+              Value: false
           Enabled: true
           Name: costmap
+        - Alpha: 1
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 10
+            Min Value: -10
+            Value: true
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz/PointCloud2
+          Color: 255; 255; 255
+          Color Transformer: Intensity
+          Decay Time: 0
+          Enabled: true
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Max Intensity: 4096
+          Min Color: 0; 0; 0
+          Min Intensity: 0
+          Name: costCloud
+          Position Transformer: XYZ
+          Queue Size: 10
+          Selectable: true
+          Size (Pixels): 3
+          Size (m): 0.00999999978
+          Style: Flat Squares
+          Topic: /robot_0/move_base/DWAPlannerROS/cost_cloud
+          Unreliable: false
+          Use Fixed Frame: true
+          Use rainbow: true
+          Value: true
       Enabled: true
       Name: Robot_0
     - Class: rviz/Group
       Displays:
-        - Alpha: 1
-          Buffer Length: 1
-          Class: rviz/Path
-          Color: 255; 85; 255
-          Enabled: false
-          Head Diameter: 0.300000012
-          Head Length: 0.200000003
-          Length: 0.300000012
-          Line Style: Lines
-          Line Width: 0.0299999993
-          Name: LocalPlan
-          Offset:
-            X: 0
-            Y: 0
-            Z: 0
-          Pose Color: 255; 85; 255
-          Pose Style: None
-          Radius: 0.0299999993
-          Shaft Diameter: 0.100000001
-          Shaft Length: 0.100000001
-          Topic: /robot_1/move_base/CollvoidLocalPlanner/local_plan
-          Unreliable: false
-          Value: false
-        - Alpha: 1
-          Buffer Length: 1
-          Class: rviz/Path
-          Color: 255; 85; 255
-          Enabled: false
-          Head Diameter: 0.300000012
-          Head Length: 0.200000003
-          Length: 0.300000012
-          Line Style: Lines
-          Line Width: 0.0299999993
-          Name: GlobalPlan
-          Offset:
-            X: 0
-            Y: 0
-            Z: 0
-          Pose Color: 255; 85; 255
-          Pose Style: None
-          Radius: 0.0299999993
-          Shaft Diameter: 0.100000001
-          Shaft Length: 0.100000001
-          Topic: /robot_1/move_base/GlobalPlanner/plan
-          Unreliable: false
-          Value: false
         - Class: rviz/Marker
-          Enabled: false
+          Enabled: true
           Marker Topic: /robot_1/vo
           Name: VOs
           Namespaces:
             {}
           Queue Size: 100
-          Value: false
+          Value: true
         - Class: rviz/MarkerArray
           Enabled: false
           Marker Topic: /robot_1/samples
@@ -505,16 +424,6 @@ Visualization Manager:
           Namespaces:
             {}
           Queue Size: 100
-          Value: false
-        - Alpha: 0.699999988
-          Class: rviz/Map
-          Color Scheme: costmap
-          Draw Behind: false
-          Enabled: false
-          Name: Costmap
-          Topic: /robot_1/move_base/local_costmap/costmap
-          Unreliable: false
-          Use Timestamp: false
           Value: false
         - Alpha: 1
           Autocompute Intensity Bounds: true
@@ -588,7 +497,7 @@ Visualization Manager:
           Axes Length: 1
           Axes Radius: 0.100000001
           Class: rviz/Pose
-          Color: 255; 25; 0
+          Color: 112; 128; 144
           Enabled: true
           Head Length: 0.300000012
           Head Radius: 0.100000001
@@ -604,13 +513,13 @@ Visualization Manager:
             - Alpha: 1
               Buffer Length: 1
               Class: rviz/Path
-              Color: 255; 85; 255
+              Color: 112; 128; 144
               Enabled: true
               Head Diameter: 0.300000012
               Head Length: 0.200000003
               Length: 0.300000012
-              Line Style: Lines
-              Line Width: 0.0299999993
+              Line Style: Billboards
+              Line Width: 0.100000001
               Name: LocalPlan
               Offset:
                 X: 0
@@ -627,13 +536,13 @@ Visualization Manager:
             - Alpha: 1
               Buffer Length: 1
               Class: rviz/Path
-              Color: 255; 85; 255
+              Color: 112; 128; 144
               Enabled: true
               Head Diameter: 0.300000012
               Head Length: 0.200000003
               Length: 0.300000012
               Line Style: Lines
-              Line Width: 0.0299999993
+              Line Width: 0.100000001
               Name: GlobalPlan
               Offset:
                 X: 0
@@ -647,62 +556,26 @@ Visualization Manager:
               Topic: /robot_1/move_base/DWAPlannerROS/global_plan
               Unreliable: false
               Value: true
-          Enabled: false
+          Enabled: true
           Name: dwa
         - Class: rviz/Group
-          Displays: ~
+          Displays:
+            - Alpha: 0.699999988
+              Class: rviz/Map
+              Color Scheme: costmap
+              Draw Behind: false
+              Enabled: false
+              Name: Costmap
+              Topic: /robot_1/move_base/local_costmap/costmap
+              Unreliable: false
+              Use Timestamp: false
+              Value: false
           Enabled: true
           Name: costmap
       Enabled: true
       Name: Robot_1
     - Class: rviz/Group
       Displays:
-        - Alpha: 1
-          Buffer Length: 1
-          Class: rviz/Path
-          Color: 255; 85; 255
-          Enabled: false
-          Head Diameter: 0.300000012
-          Head Length: 0.200000003
-          Length: 0.300000012
-          Line Style: Lines
-          Line Width: 0.0299999993
-          Name: LocalPlan
-          Offset:
-            X: 0
-            Y: 0
-            Z: 0
-          Pose Color: 255; 85; 255
-          Pose Style: None
-          Radius: 0.0299999993
-          Shaft Diameter: 0.100000001
-          Shaft Length: 0.100000001
-          Topic: /robot_2/move_base/CollvoidLocalPlanner/local_plan
-          Unreliable: false
-          Value: false
-        - Alpha: 1
-          Buffer Length: 1
-          Class: rviz/Path
-          Color: 255; 85; 255
-          Enabled: false
-          Head Diameter: 0.300000012
-          Head Length: 0.200000003
-          Length: 0.300000012
-          Line Style: Lines
-          Line Width: 0.0299999993
-          Name: GlobalPlan
-          Offset:
-            X: 0
-            Y: 0
-            Z: 0
-          Pose Color: 255; 85; 255
-          Pose Style: None
-          Radius: 0.0299999993
-          Shaft Diameter: 0.100000001
-          Shaft Length: 0.100000001
-          Topic: /robot_2/move_base/GlobalPlanner/plan
-          Unreliable: false
-          Value: false
         - Class: rviz/Marker
           Enabled: true
           Marker Topic: /robot_2/vo
@@ -742,16 +615,6 @@ Visualization Manager:
           Namespaces:
             {}
           Queue Size: 100
-          Value: false
-        - Alpha: 0.699999988
-          Class: rviz/Map
-          Color Scheme: costmap
-          Draw Behind: false
-          Enabled: false
-          Name: Costmap
-          Topic: /robot_2/move_base/local_costmap/costmap
-          Unreliable: false
-          Use Timestamp: false
           Value: false
         - Alpha: 1
           Autocompute Intensity Bounds: true
@@ -825,7 +688,7 @@ Visualization Manager:
           Axes Length: 1
           Axes Radius: 0.100000001
           Class: rviz/Pose
-          Color: 255; 25; 0
+          Color: 152; 152; 152
           Enabled: true
           Head Length: 0.300000012
           Head Radius: 0.100000001
@@ -841,196 +704,13 @@ Visualization Manager:
             - Alpha: 1
               Buffer Length: 1
               Class: rviz/Path
-              Color: 255; 85; 255
-              Enabled: false
-              Head Diameter: 0.300000012
-              Head Length: 0.200000003
-              Length: 0.300000012
-              Line Style: Lines
-              Line Width: 0.0299999993
-              Name: LocalPlan
-              Offset:
-                X: 0
-                Y: 0
-                Z: 0
-              Pose Color: 255; 85; 255
-              Pose Style: None
-              Radius: 0.0299999993
-              Shaft Diameter: 0.100000001
-              Shaft Length: 0.100000001
-              Topic: /robot_4/move_base/CollvoidLocalPlanner/local_plan
-              Unreliable: false
-              Value: false
-            - Alpha: 1
-              Buffer Length: 1
-              Class: rviz/Path
-              Color: 255; 85; 255
-              Enabled: false
-              Head Diameter: 0.300000012
-              Head Length: 0.200000003
-              Length: 0.300000012
-              Line Style: Lines
-              Line Width: 0.0299999993
-              Name: GlobalPlan
-              Offset:
-                X: 0
-                Y: 0
-                Z: 0
-              Pose Color: 255; 85; 255
-              Pose Style: None
-              Radius: 0.0299999993
-              Shaft Diameter: 0.100000001
-              Shaft Length: 0.100000001
-              Topic: /robot_4/move_base/GlobalPlanner/plan
-              Unreliable: false
-              Value: false
-            - Class: rviz/Marker
-              Enabled: false
-              Marker Topic: /robot_4/vo
-              Name: VOs
-              Namespaces:
-                {}
-              Queue Size: 100
-              Value: false
-            - Class: rviz/MarkerArray
-              Enabled: false
-              Marker Topic: /robot_4/samples
-              Name: Samples
-              Namespaces:
-                {}
-              Queue Size: 100
-              Value: false
-            - Class: rviz/Marker
-              Enabled: false
-              Marker Topic: /robot_4/orca_lines
-              Name: ORCA lines
-              Namespaces:
-                {}
-              Queue Size: 100
-              Value: false
-            - Class: rviz/Marker
-              Enabled: false
-              Marker Topic: /robot_4/obstacles
-              Name: Obstacles
-              Namespaces:
-                {}
-              Queue Size: 100
-              Value: false
-            - Class: rviz/Marker
-              Enabled: false
-              Marker Topic: /robot_4/speed
-              Name: HoloSpeed
-              Namespaces:
-                {}
-              Queue Size: 100
-              Value: false
-            - Alpha: 0.699999988
-              Class: rviz/Map
-              Color Scheme: costmap
-              Draw Behind: false
-              Enabled: false
-              Name: Costmap
-              Topic: /robot_4/move_base/local_costmap/costmap
-              Unreliable: false
-              Use Timestamp: false
-              Value: false
-            - Alpha: 1
-              Autocompute Intensity Bounds: true
-              Autocompute Value Bounds:
-                Max Value: 10
-                Min Value: -10
-                Value: true
-              Axis: Z
-              Channel Name: intensity
-              Class: rviz/LaserScan
-              Color: 255; 255; 255
-              Color Transformer: Intensity
-              Decay Time: 0
-              Enabled: false
-              Invert Rainbow: false
-              Max Color: 255; 255; 255
-              Max Intensity: 1
-              Min Color: 0; 0; 0
-              Min Intensity: 1
-              Name: LaserScan
-              Position Transformer: XYZ
-              Queue Size: 10
-              Selectable: true
-              Size (Pixels): 3
-              Size (m): 0.00999999978
-              Style: Flat Squares
-              Topic: /robot_4/base_scan
-              Unreliable: false
-              Use Fixed Frame: true
-              Use rainbow: true
-              Value: false
-            - Alpha: 1
-              Autocompute Intensity Bounds: true
-              Autocompute Value Bounds:
-                Max Value: 10
-                Min Value: -10
-                Value: true
-              Axis: Z
-              Channel Name: intensity
-              Class: rviz/PointCloud2
-              Color: 255; 255; 255
-              Color Transformer: Intensity
-              Decay Time: 0
-              Enabled: false
-              Invert Rainbow: false
-              Max Color: 255; 255; 255
-              Max Intensity: 4096
-              Min Color: 0; 0; 0
-              Min Intensity: 0
-              Name: StationaryRobots
-              Position Transformer: XYZ
-              Queue Size: 10
-              Selectable: true
-              Size (Pixels): 3
-              Size (m): 0.00999999978
-              Style: Flat Squares
-              Topic: /robot_4/stationary_robots
-              Unreliable: false
-              Use Fixed Frame: true
-              Use rainbow: true
-              Value: false
-            - Class: rviz/MarkerArray
-              Enabled: false
-              Marker Topic: /robot_4/neighbors
-              Name: Neighbors
-              Namespaces:
-                {}
-              Queue Size: 100
-              Value: false
-            - Alpha: 1
-              Axes Length: 1
-              Axes Radius: 0.100000001
-              Class: rviz/Pose
-              Color: 255; 25; 0
-              Enabled: true
-              Head Length: 0.300000012
-              Head Radius: 0.100000001
-              Name: Goal
-              Shaft Length: 1
-              Shaft Radius: 0.0500000007
-              Shape: Arrow
-              Topic: /robot_4/move_base/current_goal
-              Unreliable: false
-              Value: true
-          Enabled: false
-          Name: Robot_4
-        - Class: rviz/Group
-          Displays:
-            - Alpha: 1
-              Buffer Length: 1
-              Class: rviz/Path
-              Color: 255; 85; 255
+              Color: 152; 152; 152
               Enabled: true
               Head Diameter: 0.300000012
               Head Length: 0.200000003
               Length: 0.300000012
-              Line Style: Lines
-              Line Width: 0.0299999993
+              Line Style: Billboards
+              Line Width: 0.100000001
               Name: LocalPlan
               Offset:
                 X: 0
@@ -1047,13 +727,13 @@ Visualization Manager:
             - Alpha: 1
               Buffer Length: 1
               Class: rviz/Path
-              Color: 255; 85; 255
+              Color: 152; 152; 152
               Enabled: true
               Head Diameter: 0.300000012
               Head Length: 0.200000003
               Length: 0.300000012
               Line Style: Lines
-              Line Width: 0.0299999993
+              Line Width: 0.100000001
               Name: GlobalPlan
               Offset:
                 X: 0
@@ -1067,62 +747,26 @@ Visualization Manager:
               Topic: /robot_2/move_base/DWAPlannerROS/global_plan
               Unreliable: false
               Value: true
-          Enabled: false
+          Enabled: true
           Name: dwa
         - Class: rviz/Group
-          Displays: ~
+          Displays:
+            - Alpha: 0.699999988
+              Class: rviz/Map
+              Color Scheme: costmap
+              Draw Behind: false
+              Enabled: false
+              Name: Costmap
+              Topic: /robot_2/move_base/local_costmap/costmap
+              Unreliable: false
+              Use Timestamp: false
+              Value: false
           Enabled: true
           Name: costmap
       Enabled: true
       Name: Robot_2
     - Class: rviz/Group
       Displays:
-        - Alpha: 1
-          Buffer Length: 1
-          Class: rviz/Path
-          Color: 255; 85; 255
-          Enabled: false
-          Head Diameter: 0.300000012
-          Head Length: 0.200000003
-          Length: 0.300000012
-          Line Style: Lines
-          Line Width: 0.0299999993
-          Name: LocalPlan
-          Offset:
-            X: 0
-            Y: 0
-            Z: 0
-          Pose Color: 255; 85; 255
-          Pose Style: None
-          Radius: 0.0299999993
-          Shaft Diameter: 0.100000001
-          Shaft Length: 0.100000001
-          Topic: /robot_3/move_base/CollvoidLocalPlanner/local_plan
-          Unreliable: false
-          Value: false
-        - Alpha: 1
-          Buffer Length: 1
-          Class: rviz/Path
-          Color: 255; 85; 255
-          Enabled: false
-          Head Diameter: 0.300000012
-          Head Length: 0.200000003
-          Length: 0.300000012
-          Line Style: Lines
-          Line Width: 0.0299999993
-          Name: GlobalPlan
-          Offset:
-            X: 0
-            Y: 0
-            Z: 0
-          Pose Color: 255; 85; 255
-          Pose Style: None
-          Radius: 0.0299999993
-          Shaft Diameter: 0.100000001
-          Shaft Length: 0.100000001
-          Topic: /robot_3/move_base/GlobalPlanner/plan
-          Unreliable: false
-          Value: false
         - Class: rviz/Marker
           Enabled: true
           Marker Topic: /robot_3/vo
@@ -1162,16 +806,6 @@ Visualization Manager:
           Namespaces:
             {}
           Queue Size: 100
-          Value: false
-        - Alpha: 0.699999988
-          Class: rviz/Map
-          Color Scheme: costmap
-          Draw Behind: false
-          Enabled: false
-          Name: Costmap
-          Topic: /robot_3/move_base/local_costmap/costmap
-          Unreliable: false
-          Use Timestamp: false
           Value: false
         - Alpha: 1
           Autocompute Intensity Bounds: true
@@ -1245,7 +879,7 @@ Visualization Manager:
           Axes Length: 1
           Axes Radius: 0.100000001
           Class: rviz/Pose
-          Color: 255; 25; 0
+          Color: 72; 61; 139
           Enabled: true
           Head Length: 0.300000012
           Head Radius: 0.100000001
@@ -1261,13 +895,13 @@ Visualization Manager:
             - Alpha: 1
               Buffer Length: 1
               Class: rviz/Path
-              Color: 255; 85; 255
+              Color: 72; 61; 139
               Enabled: true
               Head Diameter: 0.300000012
               Head Length: 0.200000003
               Length: 0.300000012
-              Line Style: Lines
-              Line Width: 0.0299999993
+              Line Style: Billboards
+              Line Width: 0.100000001
               Name: LocalPlan
               Offset:
                 X: 0
@@ -1284,13 +918,13 @@ Visualization Manager:
             - Alpha: 1
               Buffer Length: 1
               Class: rviz/Path
-              Color: 255; 85; 255
+              Color: 72; 61; 139
               Enabled: true
               Head Diameter: 0.300000012
               Head Length: 0.200000003
               Length: 0.300000012
               Line Style: Lines
-              Line Width: 0.0299999993
+              Line Width: 0.100000001
               Name: GlobalPlan
               Offset:
                 X: 0
@@ -1304,14 +938,161 @@ Visualization Manager:
               Topic: /robot_3/move_base/DWAPlannerROS/global_plan
               Unreliable: false
               Value: true
-          Enabled: false
+          Enabled: true
           Name: dwa
         - Class: rviz/Group
-          Displays: ~
+          Displays:
+            - Alpha: 0.699999988
+              Class: rviz/Map
+              Color Scheme: costmap
+              Draw Behind: false
+              Enabled: false
+              Name: Costmap
+              Topic: /robot_3/move_base/local_costmap/costmap
+              Unreliable: false
+              Use Timestamp: false
+              Value: false
           Enabled: true
           Name: costmap
       Enabled: true
       Name: Robot_3
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Marker
+          Enabled: false
+          Marker Topic: /robot_4/vo
+          Name: VOs
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
+        - Class: rviz/MarkerArray
+          Enabled: false
+          Marker Topic: /robot_4/samples
+          Name: Samples
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
+        - Class: rviz/Marker
+          Enabled: false
+          Marker Topic: /robot_4/orca_lines
+          Name: ORCA lines
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
+        - Class: rviz/Marker
+          Enabled: false
+          Marker Topic: /robot_4/obstacles
+          Name: Obstacles
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
+        - Class: rviz/Marker
+          Enabled: false
+          Marker Topic: /robot_4/speed
+          Name: HoloSpeed
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
+        - Alpha: 0.699999988
+          Class: rviz/Map
+          Color Scheme: costmap
+          Draw Behind: false
+          Enabled: false
+          Name: Costmap
+          Topic: /robot_4/move_base/local_costmap/costmap
+          Unreliable: false
+          Use Timestamp: false
+          Value: false
+        - Alpha: 1
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 10
+            Min Value: -10
+            Value: true
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz/LaserScan
+          Color: 255; 255; 255
+          Color Transformer: Intensity
+          Decay Time: 0
+          Enabled: false
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Max Intensity: 1
+          Min Color: 0; 0; 0
+          Min Intensity: 1
+          Name: LaserScan
+          Position Transformer: XYZ
+          Queue Size: 10
+          Selectable: true
+          Size (Pixels): 3
+          Size (m): 0.00999999978
+          Style: Flat Squares
+          Topic: /robot_4/base_scan
+          Unreliable: false
+          Use Fixed Frame: true
+          Use rainbow: true
+          Value: false
+        - Alpha: 1
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 10
+            Min Value: -10
+            Value: true
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz/PointCloud2
+          Color: 255; 255; 255
+          Color Transformer: Intensity
+          Decay Time: 0
+          Enabled: false
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Max Intensity: 4096
+          Min Color: 0; 0; 0
+          Min Intensity: 0
+          Name: StationaryRobots
+          Position Transformer: XYZ
+          Queue Size: 10
+          Selectable: true
+          Size (Pixels): 3
+          Size (m): 0.00999999978
+          Style: Flat Squares
+          Topic: /robot_4/stationary_robots
+          Unreliable: false
+          Use Fixed Frame: true
+          Use rainbow: true
+          Value: false
+        - Class: rviz/MarkerArray
+          Enabled: false
+          Marker Topic: /robot_4/neighbors
+          Name: Neighbors
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
+        - Alpha: 1
+          Axes Length: 1
+          Axes Radius: 0.100000001
+          Class: rviz/Pose
+          Color: 255; 25; 0
+          Enabled: true
+          Head Length: 0.300000012
+          Head Radius: 0.100000001
+          Name: Goal
+          Shaft Length: 1
+          Shaft Radius: 0.0500000007
+          Shape: Arrow
+          Topic: /robot_4/move_base/current_goal
+          Unreliable: false
+          Value: true
+      Enabled: true
+      Name: Robot_4
     - Class: rviz/Group
       Displays:
         - Alpha: 1
@@ -1861,17 +1642,6 @@ Visualization Manager:
           Value: true
       Enabled: true
       Name: Robot_7
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /found_robots
-      Name: FoundRobots
-      Namespaces:
-        robot_0: true
-        robot_1: true
-        robot_2: true
-        robot_3: true
-      Queue Size: 100
-      Value: true
     - Class: rviz/Group
       Displays:
         - Class: rviz/MarkerArray
@@ -1991,6 +1761,17 @@ Visualization Manager:
             {}
           Queue Size: 100
           Value: true
+        - Class: rviz/MarkerArray
+          Enabled: true
+          Marker Topic: /found_robots
+          Name: FoundRobots
+          Namespaces:
+            robot_0: true
+            robot_1: true
+            robot_2: true
+            robot_3: true
+          Queue Size: 100
+          Value: true
       Enabled: true
       Name: mapinfo
   Enabled: true
@@ -2033,16 +1814,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 23.3266144
+      Distance: 17.7821045
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -7.41718054
-        Y: -6.11574411
-        Z: 0.0568525158
+        X: -7.48813534
+        Y: -3.68044114
+        Z: 0.0592889041
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
@@ -2056,10 +1837,10 @@ Visualization Manager:
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1028
+  Height: 1056
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000016d0000037dfc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f0070006500720074006900650073020000087b000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c00610079007301000000280000037d000000d700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d006500720061010000043c000000160000000000000000000000010000010700000597fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003600000597000000ad00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007540000003bfc0100000002fb0000000800540069006d00650100000000000007540000030000fffffffb0000000800540069006d00650100000000000004500000000000000000000005e10000037d00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001e900000399fc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f0070006500720074006900650073020000087b000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000002800000399000000d700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d006500720061010000043c000000160000000000000000000000010000010700000597fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003600000597000000ad00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000003bfc0100000002fb0000000800540069006d00650100000000000007800000030000fffffffb0000000800540069006d00650100000000000004500000000000000000000005910000039900000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -2068,6 +1849,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1876
+  Width: 1920
   X: 0
   Y: 105

@@ -136,7 +136,7 @@ define sim_laser ranger
 
 define candle position
 (
-  size [0.800 0.520 0.300]
+  size [0.400 0.260 0.300]
   origin [0.000 0.000 0.000 0.000]
   gui_nose 1
 
@@ -149,7 +149,7 @@ define candle position
   bitmap "candle.png"
 )
 
-cube_model( pose [ -4.797 3.743 0.000 0.000 ] name "cube_0" )
+# cube_model( pose [ -4.797 3.743 0.000 0.000 ] name "cube_0" )
 
 
 #obst( pose [ 0.0 0.0 0 45.000000 ] name "block" color "black")

@@ -101,6 +101,7 @@ class RobotVisualizer(object):
             marker.color.r = 0.0
             marker.color.g = 0.0
             marker.color.b = 0.0
+            rospy.logwarn("Unknown robot id: %s" % robot)
     
         return marker.color
     
@@ -115,7 +116,7 @@ class RobotVisualizer(object):
         pose_marker.ns = robot_msg.robot_id
         pose_marker.lifetime = rospy.Duration(1)
         pose_marker.action = Marker.ADD
-        pose_marker.scale.z = 0.0
+        pose_marker.scale.z = 0.01
         pose_marker.color = self.get_robot_color(robot_msg.robot_id)
         pose_marker.id = 0
         pose_marker.pose = robot_msg.pose.pose
