@@ -50,7 +50,7 @@ namespace collvoid_scoring_function
         ros::Publisher vo_pub_, neighbors_pub_, samples_pub_;
         ros::ServiceClient get_me_srv_, get_neighbors_srv_;
 
-        std::vector<VelocitySample> points;
+        std::vector<VelocitySample> points_;
     };
 }
 

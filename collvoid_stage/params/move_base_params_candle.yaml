@@ -8,13 +8,13 @@ DWAPlannerROS:
   
   max_trans_vel: 1.0 # choose slightly less than the base's capability
   min_trans_vel: 0.1  # this is the min trans velocity when there is negligible rotational velocity
-  trans_stopped_vel: 0.1
+  trans_stopped_vel: 0.1 # 这是当机器人停止时的最小速度
 
   # Warning!
   #   do not set min_trans_vel to 0.0 otherwise dwa will always think translational velocities
   #   are non-negligible and small in place rotational velocities will be created.
 
-  max_rot_vel: 0.7  # choose slightly less than the base's capability
+  max_rot_vel: 1.7  # choose slightly less than the base's capability
   min_rot_vel: 0.3  # this is the min angular velocity when there is negligible translational velocity
   rot_stopped_vel: 0.4
 
@@ -37,7 +37,7 @@ DWAPlannerROS:
   path_distance_bias: 144.0      # 32.0   - weighting for how much it should stick to the global path plan
   goal_distance_bias: 12.0      # 24.0   - wighting for how much it should attempt to reach its goal
   collvoid_scale: 48.0
-  occdist_scale: 2.1           # 0.01   - weighting for how much the controller should avoid obstacles
+  occdist_scale: 2.1           # 0.01   - weighting for how much the controller should avoid obstacles 障碍物权重
   forward_point_distance: 0.325 # 0.325  - how far along to place an additional scoring point
   stop_time_buffer: 0.2         # 0.2    - amount of time a robot must stop in before colliding for a valid traj.
   scaling_speed: 0.25           # 0.25   - absolute velocity at which to start scaling the robot's footprint
@@ -155,7 +155,7 @@ local_costmap:
   #cost_scaling_factor and inflation_radius were now moved to the inflation_layer ns
   local_inflation_layer:
     enabled:              true
-    cost_scaling_factor:  5.75  # exponential rate at which the obstacle cost drops off (default: 10)
+    cost_scaling_factor:  5.75  # exponential rate at which the obstacle cost drops off (default: 10) 越大值越小
     inflation_radius:     2.25  # was 0.26 in previoys configuration
 
 

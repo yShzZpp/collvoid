@@ -69,7 +69,7 @@ void MePublisher::init(ros::NodeHandle nh, tf::TransformListener *tf) {
     //Publishers
     me_pub_ = nh.advertise<visualization_msgs::MarkerArray>("me", 1, true);
     polygon_pub_ = nh.advertise<geometry_msgs::PolygonStamped>("convex_hull", 1, true);
-    position_share_pub_ = nh.advertise<collvoid_msgs::PoseTwistWithCovariance>("/position_share", 1);
+    position_share_pub_ = nh.advertise<collvoid_msgs::PoseTwistWithCovariance>("/position_share_me", 1);
 
 
     //Subscribers

@@ -10,3 +10,6 @@ catkin_package(
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
 )
+install(DIRECTORY launch params
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)

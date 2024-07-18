@@ -21,6 +21,7 @@
 #include "collvoid_local_planner/Utils.h"
 #include "collvoid_local_planner/Vector2.h"
 #include "collvoid_local_planner/collvoid_publishers.h"
+#include "cti_spdlog.h"
 
 
 using namespace collvoid;

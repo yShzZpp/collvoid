@@ -3,25 +3,27 @@
 //
 
 #include "collvoid_local_planner/collvoid_scoring_function.h"
+#include "cti_spdlog.h"
 
 
 namespace collvoid_scoring_function
 {
 
     void CollvoidScoringFunction::init(ros::NodeHandle nh) {
-        get_me_srv_ = nh.serviceClient<collvoid_srvs::GetMe>("get_me");
-        get_neighbors_srv_ = nh.serviceClient<collvoid_srvs::GetNeighbors>("get_neighbors");
-        neighbors_pub_ = nh.advertise<visualization_msgs::MarkerArray>("neighbors", 1);
-        samples_pub_ = nh.advertise<visualization_msgs::MarkerArray>("samples", 1);
-        vo_pub_ = nh.advertise<visualization_msgs::Marker>("vo", 1);
+        get_me_srv_ = nh.serviceClient<collvoid_srvs::GetMe>("get_me"); // 获取自身的信息：id，半径，是否全向移动，是否可控制，位置，速度，footprint
+        get_neighbors_srv_ = nh.serviceClient<collvoid_srvs::GetNeighbors>("get_neighbors"); // 获取邻居的信息：id，半径，是否全向移动，是否可控制，位置，速度，footprint
+        neighbors_pub_ = nh.advertise<visualization_msgs::MarkerArray>("neighbors", 1); // 发布邻居的信息
+        samples_pub_ = nh.advertise<visualization_msgs::MarkerArray>("samples", 1); // 发布采样的信息
+        vo_pub_ = nh.advertise<visualization_msgs::Marker>("vo", 1); // 发布VO的信息
 
         ros::NodeHandle co_nh("~/CollvoidScoring");
-        use_truncation_ = co_nh.param("use_truncation", true);
-        trunc_time_ = co_nh.param("trunctime", 8.);
+        use_truncation_ = co_nh.param("use_truncation", true); // 是否使用截断
+        trunc_time_ = co_nh.param("trunctime", 8.); // 10
         use_polygon_footprint_ = co_nh.param("use_polygon_footprint", true);
-        max_dist_vo_ = co_nh.param("max_dist_vo", 0.1);
-        points.clear();
+        max_dist_vo_ = co_nh.param("max_dist_vo", 0.1); //1
+        points_.clear();
         ROS_INFO("Collvoid Scoring init done! Trunctime %f, max_dist_vo %f", trunc_time_, max_dist_vo_);
+        SPDLOG_INFO("Collvoid Scoring init done! Trunctime {}, max_dist_vo {}", trunc_time_, max_dist_vo_);
         //holo_robot_ = false;
     }
 
@@ -114,13 +116,13 @@ namespace collvoid_scoring_function
         me_->computeAgentVOs();
 
         collvoid::publishVOs(me_->position_, me_->all_vos_, use_truncation_, "/map", "/map", vo_pub_);
-        collvoid::publishPoints(me_->position_, points, "/map", "/map", samples_pub_);
+        collvoid::publishPoints(me_->position_, points_, "/map", "/map", samples_pub_);
         //for (size_t i = 0; i < me_->all_vos_.size(); ++i) {
         //    VO v = me_->all_vos_.at(i);
         //    ROS_INFO("Origin %f %f", v.point.x(), v.point.y()) ;
         // }
 
-        points.clear();
+        points_.clear();
 
         // Add constraints - Not necessary due to sampling?
         return true;
@@ -136,18 +138,18 @@ namespace collvoid_scoring_function
         // TODO: check if goalHeading and endPoint are in the same reference frame
         double x, y, th;
         double x_s, y_s, th_s;
-        traj.getEndpoint(x, y, th);
-        traj.getPoint(0, x_s, y_s, th_s);
+        traj.getEndpoint(x, y, th); // 终点
+        traj.getPoint(0, x_s, y_s, th_s); // 起点
 
 
        //ROS_INFO("start orientation / end %f, %f", th_s,th);
 
-        double time_diff = (int)traj.getPointsSize() * traj.time_delta_;
+        double time_diff = (int)traj.getPointsSize() * traj.time_delta_; // 采样点的总时间
         double vel_x, vel_y, vel_theta;
         //vel_x = traj.xv_;
         //vel_y = traj.yv_;
         //vel_theta = traj.thetav_;
-        vel_x = x - x_s;
+        vel_x = x - x_s; // 
         vel_y = y - y_s;
         vel_theta = th - th_s;
 
@@ -186,7 +188,7 @@ namespace collvoid_scoring_function
         VelocitySample v;
         v.velocity = test_vel;
         v.cost = cost;
-        points.push_back(v);
+        points_.push_back(v);
 
         //ROS_INFO("Collvoid Scoring costs: %f for vector %f, %f, speed %f, ang %f time dif %f", cost, test_vel.x(), test_vel.y(), vel_x, vel_theta, traj.time_delta_);
 

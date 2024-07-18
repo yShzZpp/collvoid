@@ -70,6 +70,13 @@ target_link_libraries(MePublisher
 add_dependencies(MePublisher ${${PROJECT_NAME}_EXPORTED_TARGETS})
 add_dependencies(MePublisher ${catkin_EXPORTED_TARGETS})
 
+add_executable(MePublisherCandle src/me_publisher_candle.cpp src/clearpath.cpp src/collvoid_publishers.cpp)
+target_link_libraries(MePublisherCandle
+        ${catkin_LIBRARIES}
+        ${Boost_LIBRARIES})
+add_dependencies(MePublisherCandle ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(MePublisherCandle ${catkin_EXPORTED_TARGETS})
+
 
 add_executable(ROSAgent src/collvoid_local_planner.cpp src/Agent.cpp src/ROSAgent.cpp src/orca.cpp src/collvoid_publishers.cpp src/clearpath.cpp)
 target_link_libraries(ROSAgent
@@ -78,3 +85,15 @@ target_link_libraries(ROSAgent
 add_dependencies(ROSAgent ${${PROJECT_NAME}_EXPORTED_TARGETS})
 add_dependencies(ROSAgent ${catkin_EXPORTED_TARGETS})
 
+install(TARGETS MePublisher MePublisherCandle
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(FILES blp_plugin.xml
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+        )
+#install libcollvoid_scoring_function
+install(TARGETS collvoid_scoring_function collvoid_local_planner
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        )

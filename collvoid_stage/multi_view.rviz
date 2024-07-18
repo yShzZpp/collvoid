@@ -7,7 +7,10 @@ Panels:
         - /Robot_01
         - /Robot_01/Samples1/Namespaces1
         - /Robot_01/dwa1
+        - /Robot_11/costmap1/Costmap1
         - /Robot_21/dwa1
+        - /Robot_21/costmap1/Costmap1
+        - /Robot_31/costmap1/Costmap1
       Splitter Ratio: 0.472602725
     Tree Height: 778
   - Class: rviz/Selection
@@ -562,15 +565,15 @@ Visualization Manager:
           Displays:
             - Alpha: 0.699999988
               Class: rviz/Map
-              Color Scheme: costmap
+              Color Scheme: map
               Draw Behind: false
-              Enabled: false
+              Enabled: true
               Name: Costmap
               Topic: /robot_1/move_base/local_costmap/costmap
               Unreliable: false
               Use Timestamp: false
-              Value: false
-          Enabled: true
+              Value: true
+          Enabled: false
           Name: costmap
       Enabled: true
       Name: Robot_1
@@ -753,15 +756,15 @@ Visualization Manager:
           Displays:
             - Alpha: 0.699999988
               Class: rviz/Map
-              Color Scheme: costmap
+              Color Scheme: map
               Draw Behind: false
-              Enabled: false
+              Enabled: true
               Name: Costmap
               Topic: /robot_2/move_base/local_costmap/costmap
               Unreliable: false
               Use Timestamp: false
-              Value: false
-          Enabled: true
+              Value: true
+          Enabled: false
           Name: costmap
       Enabled: true
       Name: Robot_2
@@ -944,15 +947,15 @@ Visualization Manager:
           Displays:
             - Alpha: 0.699999988
               Class: rviz/Map
-              Color Scheme: costmap
+              Color Scheme: map
               Draw Behind: false
-              Enabled: false
+              Enabled: true
               Name: Costmap
               Topic: /robot_3/move_base/local_costmap/costmap
               Unreliable: false
               Use Timestamp: false
-              Value: false
-          Enabled: true
+              Value: true
+          Enabled: false
           Name: costmap
       Enabled: true
       Name: Robot_3
@@ -1766,10 +1769,7 @@ Visualization Manager:
           Marker Topic: /found_robots
           Name: FoundRobots
           Namespaces:
-            robot_0: true
-            robot_1: true
-            robot_2: true
-            robot_3: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -1814,16 +1814,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 17.7821045
+      Distance: 18.7425022
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -7.48813534
-        Y: -3.68044114
-        Z: 0.0592889041
+        X: -8.39434052
+        Y: -3.17403817
+        Z: 0.059791483
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false

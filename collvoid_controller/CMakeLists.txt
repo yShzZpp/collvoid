@@ -12,3 +12,9 @@ catkin_package(
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
 )
+catkin_install_python(PROGRAMS
+  #所有的python文件install到bin目录下
+	src/collvoid_controller/position_share_controller_candle.py
+
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
