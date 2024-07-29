@@ -32,23 +32,11 @@ MePublisher::MePublisher() {
 
 void MePublisher::init(ros::NodeHandle nh, tf::TransformListener *tf) {
     tf_ = tf;
-    ros::NodeHandle ns_nh("move_base/local_costmap");
+    ros::NodeHandle ns_nh("move_base_flex/local_costmap");
     ros::NodeHandle private_nh("collvoid");
 
     //set my id
-    my_id_ = nh.getNamespace();
-    if (strcmp(my_id_.c_str(), "/") == 0) {
-        char hostname[1024];
-        hostname[1023] = '\0';
-        gethostname(hostname, 1023);
-        my_id_ = std::string(hostname);
-    }
-    // remove funky "/" to get uniform name in python and here
-    my_id_.erase(std::remove(my_id_.begin(), my_id_.end(), '/'), my_id_.end());
-
-    // agent params
-    my_id_ = getParamDef<std::string>(private_nh, "name", my_id_);
-
+    my_id_ = nh.param<std::string>("/robot_attribute/number", "robot");
 
     private_nh.param<std::string>("base_frame", base_frame_, nh.getNamespace() + "/base_link");
     private_nh.param<std::string>("global_frame", global_frame_, "map");
@@ -78,8 +66,9 @@ void MePublisher::init(ros::NodeHandle nh, tf::TransformListener *tf) {
 
     //Service provider
     server_ = nh.advertiseService("get_me", &MePublisher::getMeCB, this);
-    SPDLOG_INFO("[MePublisher] base_frame:[{}], global_frame:[{}], eps:[{}], use_polygon_footprint:[{}], holo_robot:[{}], controlled:[{}], publish_me_frequency:[{}], odom:[{}], particlecloud_weighted:[{}], get_me:[{}]",
-                base_frame_, global_frame_, eps_, use_polygon_footprint_, holo_robot_, controlled_, publish_me_period_, odom_sub_.getTopic(), particle_sub_.getTopic(), server_.getService());
+    SPDLOG_INFO("[MePublisher] base_frame:[{}], global_frame:[{}], eps:[{}], use_polygon_footprint:[{}], holo_robot:[{}], controlled:[{}], publish_me_frequency:[{}], odom:[{}], particlecloud_weighted:[{}], get_me:[{}], footprintSize:[{}], minkowski_footprintSize:[{}]",
+                base_frame_, global_frame_, eps_, use_polygon_footprint_, holo_robot_, controlled_, publish_me_period_, odom_sub_.getTopic(), particle_sub_.getTopic(), server_.getService(), footprint_msg_.polygon.points.size(), minkowski_footprint_.size());
+    SPDLOG_INFO("nh: {}, ns_nh: {}, private_nh: {}", nh.getNamespace(), ns_nh.getNamespace(), private_nh.getNamespace());
 }
 
 bool MePublisher::getMeCB(collvoid_srvs::GetMe::Request &req, collvoid_srvs::GetMe::Response &res){
@@ -104,6 +93,7 @@ void MePublisher::amclPoseArrayWeightedCallback(const collvoid_msgs::PoseArrayWe
     sensor_msgs::PointCloud pc;
     pc.header = msg->header;
     pc.header.stamp = ros::Time(0);
+    SPDLOG_INFO("[MePublisher] amclPoseArrayWeightedCallback: msg->poses.size:[{}]", msg->poses.size());
     for (int i = 0; i < (int) msg->poses.size(); i++) {
         geometry_msgs::Point32 p;
         p.x = msg->poses[i].position.x;
@@ -306,6 +296,8 @@ void MePublisher::computeNewLocUncertainty() {
     cur_loc_unc_radius_ = std::min(uninflated_robot_radius_ * 2.0, collvoid::abs(points[j - 1].point));
     //ROS_ERROR("Loc Uncertainty = %f", cur_loc_unc_radius_);
     radius_ = uninflated_robot_radius_ + cur_loc_unc_radius_;
+    ROS_INFO("Loc Uncertainty = %f", cur_loc_unc_radius_);
+    SPDLOG_INFO("[MePublisher] uninflated_robot_radius:[{}], cur_loc_unc_radius:[{}], radius:[{}]", uninflated_robot_radius_, cur_loc_unc_radius_, radius_);
 }
 
 bool MePublisher::compareConvexHullPointsPosition(const ConvexHullPoint &p1, const ConvexHullPoint &p2) {
@@ -343,6 +335,7 @@ void MePublisher::getFootprint(ros::NodeHandle private_nh){
     std::vector< geometry_msgs::Point > footprint;
     if( private_nh.searchParam( "footprint", full_param_name ))
     {
+        SPDLOG_INFO("[MePublisher] footprint:[{}]", full_param_name);
         XmlRpc::XmlRpcValue footprint_xmlrpc;
         private_nh.getParam( full_param_name, footprint_xmlrpc );
         if( footprint_xmlrpc.getType() == XmlRpc::XmlRpcValue::TypeString &&
@@ -357,6 +350,7 @@ void MePublisher::getFootprint(ros::NodeHandle private_nh){
         }
     }
     else {
+        SPDLOG_INFO("[MePublisher] robot_radius:[{}]", radius_);
         footprint = costmap_2d::makeFootprintFromRadius(radius_);
     }
     for (size_t i=0; i<footprint.size(); ++i) {
@@ -374,6 +368,8 @@ int main(int argc, char **argv) {
     //ros::NodeHandle nh;
     ros::NodeHandle nh;
 
+    cti::buildingrobot::log::SpdLog log("collvoid_me_publisher", 100 * 1024 * 1024, 2);
+    SPDLOG_INFO("collvoid_me_publisher start==================================================");
     boost::shared_ptr<MePublisher> me(new MePublisher());
     tf::TransformListener tf;
     me->init(nh, &tf);

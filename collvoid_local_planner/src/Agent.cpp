@@ -164,6 +164,7 @@ namespace collvoid {
             all_vos_.push_back(new_agent_vo);
 
         }
+        SPDLOG_INFO("Agent has {} agent VOs and {} static VOs", agent_vos_.size(), static_vos_.size());
     }
 
     void Agent::setLeftPref(double left_pref) {

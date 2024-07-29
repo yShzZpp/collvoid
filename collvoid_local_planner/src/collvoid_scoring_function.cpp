@@ -37,10 +37,12 @@ namespace collvoid_scoring_function
             me_->type_vo_ = HRVOS;
 
             //ROS_INFO("GOT ME");
+            // SPDLOG_INFO("CDWA scoring: Got me");
             return true;
         }
         else {
             ROS_INFO("Collvoid Scoring: Could not get me");
+            SPDLOG_INFO("CDWA scoring: Could not get me");
             return false;
         }
     }
@@ -55,11 +57,12 @@ namespace collvoid_scoring_function
             std::sort(me_->agent_neighbors_.begin(), me_->agent_neighbors_.end(),
                       boost::bind(&CollvoidScoringFunction::compareNeighborsPositions, this, _1, _2));
             collvoid::publishNeighborPositionsBare(me_->agent_neighbors_, "/map", "/map", neighbors_pub_);
+            // SPDLOG_INFO("CDWA scoring: Got neighbors");
             return true;
         }
         else {
             ROS_INFO("Collvoid Scoring: Could not get nieghbors");
-
+            SPDLOG_INFO("CDWA scoring: Could not get neighbors");
             return false;
         }
     }
@@ -125,6 +128,7 @@ namespace collvoid_scoring_function
         points_.clear();
 
         // Add constraints - Not necessary due to sampling?
+        // SPDLOG_INFO("CDWA scoring: Prepared");
         return true;
     }
 
@@ -182,8 +186,8 @@ namespace collvoid_scoring_function
                     (max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->agent_vos_, test_vel, use_truncation_, true), 0.))) /
                     max_dist_vo_, 0.);
 
-            cost += 0.5 * std::max(( max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->human_vos_, test_vel, use_truncation_, true), 0.)))/max_dist_vo_, 0.);
-            cost += 0.3* std::max(( max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->static_vos_, test_vel, use_truncation_, true), 0.)))/max_dist_vo_, 0.);
+            cost += 0.5 * std::max((max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->human_vos_, test_vel, use_truncation_, true), 0.))) / max_dist_vo_, 0.);
+            cost += 0.3 * std::max((max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->static_vos_, test_vel, use_truncation_, true), 0.))) / max_dist_vo_, 0.);
         }
         VelocitySample v;
         v.velocity = test_vel;

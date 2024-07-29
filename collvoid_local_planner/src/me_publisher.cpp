@@ -374,6 +374,7 @@ int main(int argc, char **argv) {
     //ros::NodeHandle nh;
     ros::NodeHandle nh;
 
+    cti::buildingrobot::log::SpdLog log("collvoid_me_publisher", 100 * 1024 * 1024, 2);
     boost::shared_ptr<MePublisher> me(new MePublisher());
     tf::TransformListener tf;
     me->init(nh, &tf);
