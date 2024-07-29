@@ -136,6 +136,8 @@ namespace collvoid_dwa_local_planner
         /** @brief Sets new plan and resets state */
         bool setPlan(const std::vector<geometry_msgs::PoseStamped> &orig_global_plan);
 
+        void footprintCallback(const geometry_msgs::PolygonStamped::ConstPtr& footprint);
+
     private:
         base_local_planner::LocalPlannerUtil *planner_util_;
 
@@ -177,8 +179,11 @@ namespace collvoid_dwa_local_planner
         GoalAlignmentCostFunction goal_alignment_cost_;
         PathAlignmentCostFunction path_alignment_cost_;
         collvoid_scoring_function::CollvoidScoringFunction collvoid_costs_;
+        std::vector<geometry_msgs::Point> footprint_spec_;
 
         base_local_planner::SimpleScoredSamplingPlanner scored_sampling_planner_;
+
+        ros::Subscriber footprint_sub_;
     };
 };
 #endif

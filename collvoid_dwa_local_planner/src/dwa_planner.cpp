@@ -1,45 +1,45 @@
 /*********************************************************************
-*
-* Software License Agreement (BSD License)
-*
-*  Copyright (c) 2009, Willow Garage, Inc.
-*  All rights reserved.
-*
-*  Redistribution and use in source and binary forms, with or without
-*  modification, are permitted provided that the following conditions
-*  are met:
-*
-*   * Redistributions of source code must retain the above copyright
-*     notice, this list of conditions and the following disclaimer.
-*   * Redistributions in binary form must reproduce the above
-*     copyright notice, this list of conditions and the following
-*     disclaimer in the documentation and/or other materials provided
-*     with the distribution.
-*   * Neither the name of Willow Garage, Inc. nor the names of its
-*     contributors may be used to endorse or promote products derived
-*     from this software without specific prior written permission.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-*  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-*  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-*  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-*  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-*  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-*  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-*  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-*  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-*  POSSIBILITY OF SUCH DAMAGE.
-*
-* Author: Eitan Marder-Eppstein
-*********************************************************************/
+ *
+ * Software License Agreement (BSD License)
+ *
+ *  Copyright (c) 2009, Willow Garage, Inc.
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *   * Neither the name of Willow Garage, Inc. nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Author: Eitan Marder-Eppstein
+ *********************************************************************/
 #include <collvoid_dwa_local_planner/dwa_planner.h>
 #include <base_local_planner/goal_functions.h>
 #include <base_local_planner/map_grid_cost_point.h>
 #include <cmath>
 
-//for computing path distance
+// for computing path distance
 #include <queue>
 
 #include <angles/angles.h>
@@ -50,8 +50,8 @@
 
 namespace collvoid_dwa_local_planner
 {
-void DWAPlanner::reconfigure(DWAPlannerConfig &config)
-{
+  void DWAPlanner::reconfigure(DWAPlannerConfig& config)
+  {
 
     boost::mutex::scoped_lock l(configuration_mutex_);
 
@@ -94,60 +94,68 @@ void DWAPlanner::reconfigure(DWAPlannerConfig &config)
     vy_samp = config.vy_samples;
     vth_samp = config.vth_samples;
 
-    if (vx_samp <= 0) {
-        ROS_WARN("You've specified that you don't want any samples in the x dimension. We'll at least assume that you want to sample one value... so we're going to set vx_samples to 1 instead");
-        vx_samp = 1;
-        config.vx_samples = vx_samp;
+    if (vx_samp <= 0)
+    {
+      ROS_WARN("You've specified that you don't want any samples in the x dimension. We'll at least assume that you want to sample one value... so we're going to set vx_samples to 1 instead");
+      SPDLOG_WARN("你指定了在x维度上不想有任何样本。我们至少假设你想采样一个值...所以我们将vx_samples设置为1");
+      vx_samp = 1;
+      config.vx_samples = vx_samp;
     }
 
-    if (vy_samp <= 0) {
-        ROS_WARN("You've specified that you don't want any samples in the y dimension. We'll at least assume that you want to sample one value... so we're going to set vy_samples to 1 instead");
-        vy_samp = 1;
-        config.vy_samples = vy_samp;
+    if (vy_samp <= 0)
+    {
+      SPDLOG_WARN("你指定了在y维度上不想有任何样本。我们至少假设你想采样一个值...所以我们将vy_samples设置为1");
+      ROS_WARN("You've specified that you don't want any samples in the y dimension. We'll at least assume that you want to sample one value... so we're going to set vy_samples to 1 instead");
+      vy_samp = 1;
+      config.vy_samples = vy_samp;
     }
 
-    if (vth_samp <= 0) {
-        ROS_WARN("You've specified that you don't want any samples in the th dimension. We'll at least assume that you want to sample one value... so we're going to set vth_samples to 1 instead");
-        vth_samp = 1;
-        config.vth_samples = vth_samp;
+    if (vth_samp <= 0)
+    {
+      SPDLOG_WARN("你指定了在th维度上不想有任何样本。我们至少假设你想采样一个值...所以我们将vth_samples设置为1");
+      ROS_WARN("You've specified that you don't want any samples in the th dimension. We'll at least assume that you want to sample one value... so we're going to set vth_samples to 1 instead");
+      vth_samp = 1;
+      config.vth_samples = vth_samp;
     }
 
     vsamples_[0] = vx_samp;
     vsamples_[1] = vy_samp;
     vsamples_[2] = vth_samp;
-}
+    SPDLOG_INFO("==DWAPlanner vx_samples: {}, vy_samples: {}, vth_samples: {}, obs max_trans_vel: [{}], max_scaling_factor: [{}], scaling_speed: [{}]",
+                vx_samp, vy_samp, vth_samp, config.max_trans_vel, config.max_scaling_factor, config.scaling_speed);
+  }
 
-DWAPlanner::DWAPlanner(std::string name, base_local_planner::LocalPlannerUtil *planner_util)
-    : planner_util_(planner_util)
-    , obstacle_costs_(planner_util->getCostmap())
-    , path_costs_(planner_util->getCostmap(), 0.0, 0.0, false)
-    , goal_costs_(planner_util->getCostmap(), 0.0, 0.0, true)
-    , goal_front_costs_(planner_util->getCostmap(), 0.0, 0.0, true)
-    , alignment_costs_(planner_util->getCostmap(), 0.0, 0.0, false)
-        , collvoid_costs_()
-{
+  DWAPlanner::DWAPlanner(std::string name, base_local_planner::LocalPlannerUtil* planner_util)
+      : planner_util_(planner_util), obstacle_costs_(planner_util->getCostmap()), path_costs_(planner_util->getCostmap(), 0.0, 0.0, false), goal_costs_(planner_util->getCostmap(), 0.0, 0.0, true), goal_front_costs_(planner_util->getCostmap(), 0.0, 0.0, true), alignment_costs_(planner_util->getCostmap(), 0.0, 0.0, false), collvoid_costs_()
+  {
     ros::NodeHandle private_nh("~/" + name);
 
     goal_front_costs_.setStopOnFailure(false);
     alignment_costs_.setStopOnFailure(false);
 
-    //Assuming this planner is being run within the navigation stack, we can
-    //just do an upward search for the frequency at which its being run. This
-    //also allows the frequency to be overwritten locally.
+    // Assuming this planner is being run within the navigation stack, we can
+    // just do an upward search for the frequency at which its being run. This
+    // also allows the frequency to be overwritten locally.
     std::string controller_frequency_param_name;
 
-    if (!private_nh.searchParam("controller_frequency", controller_frequency_param_name)) {
-        sim_period_ = 0.05;
-    } else {
-        double controller_frequency = 0;
-        private_nh.param(controller_frequency_param_name, controller_frequency, 20.0);
+    if (!private_nh.searchParam("controller_frequency", controller_frequency_param_name))
+    {
+      sim_period_ = 0.05;
+    }
+    else
+    {
+      double controller_frequency = 0;
+      private_nh.param(controller_frequency_param_name, controller_frequency, 20.0);
 
-        if (controller_frequency > 0) {
-            sim_period_ = 1.0 / controller_frequency;
-        } else {
-            ROS_WARN("A controller_frequency less than 0 has been set. Ignoring the parameter, assuming a rate of 20Hz");
-            sim_period_ = 0.05;
-        }
+      if (controller_frequency > 0)
+      {
+        sim_period_ = 1.0 / controller_frequency;
+      }
+      else
+      {
+        ROS_WARN("A controller_frequency less than 0 has been set. Ignoring the parameter, assuming a rate of 20Hz");
+        sim_period_ = 0.05;
+      }
     }
 
     ROS_INFO("Sim period is set to %.2f", sim_period_);
@@ -173,16 +181,20 @@ DWAPlanner::DWAPlanner(std::string name, base_local_planner::LocalPlannerUtil *p
     collvoid_costs_.init(nh);
     double collvoid_scale;
     private_nh.param("collvoid_scale", collvoid_scale, 12.);
+    SPDLOG_INFO("[{}] freq: {}, collvoid_scale: {}", name, sim_period_, collvoid_scale);
 
     collvoid_costs_.setScale(collvoid_scale);
 
+    // ros::NodeHandle move_base_nh("~");
+    // footprint_sub_ = nh.subscribe("/move_base_flex/local_costmap/footprint", 1, &DWAPlanner::footprintCallback, this);
+    // SPDLOG_INFO("CDWA footprint topic:{}", footprint_sub_.getTopic());
     // set up all the cost functions that will be applied in order
     // (any function returning negative values will abort scoring, so the order can improve performance)
-    std::vector<base_local_planner::TrajectoryCostFunction *> critics;
+    std::vector<base_local_planner::TrajectoryCostFunction*> critics;
     critics.push_back(&oscillation_costs_); // discards oscillating motions (assisgns cost -1)
-    critics.push_back(&obstacle_costs_); // discards trajectories that move into obstacles
-    critics.push_back(&goal_front_costs_); // prefers trajectories that make the nose go towards (local) nose goal
-    critics.push_back(&collvoid_costs_); // tries to adapt collvoid settings
+    critics.push_back(&obstacle_costs_);    // discards trajectories that move into obstacles
+    critics.push_back(&goal_front_costs_);  // prefers trajectories that make the nose go towards (local) nose goal
+    critics.push_back(&collvoid_costs_);    // tries to adapt collvoid settings
 
     critics.push_back(&alignment_costs_); // prefers trajectories that keep the robot nose on nose path
     critics.push_back(&path_alignment_cost_);
@@ -191,26 +203,25 @@ DWAPlanner::DWAPlanner(std::string name, base_local_planner::LocalPlannerUtil *p
     critics.push_back(&goal_costs_); // prefers trajectories that go towards (local) goal, based on wave propagation
 
     // trajectory generators
-    std::vector<base_local_planner::TrajectorySampleGenerator *> generator_list;
+    std::vector<base_local_planner::TrajectorySampleGenerator*> generator_list;
     generator_list.push_back(&generator_);
 
     scored_sampling_planner_ = base_local_planner::SimpleScoredSamplingPlanner(generator_list, critics);
 
     private_nh.param("cheat_factor", cheat_factor_, 1.0);
-}
+  }
 
-// used for visualization only, total_costs are not really total costs
-bool DWAPlanner::getCellCosts(int cx, int cy, float &path_cost, float &goal_cost, float &occ_cost, float &total_cost)
-{
+  // used for visualization only, total_costs are not really total costs
+  bool DWAPlanner::getCellCosts(int cx, int cy, float& path_cost, float& goal_cost, float& occ_cost, float& total_cost)
+  {
 
     path_cost = path_costs_.getCellCosts(cx, cy);
     goal_cost = goal_costs_.getCellCosts(cx, cy);
     occ_cost = planner_util_->getCostmap()->getCost(cx, cy);
 
-    if (path_cost == path_costs_.obstacleCosts()
-            || path_cost == path_costs_.unreachableCellCosts()
-            || occ_cost >= costmap_2d::INSCRIBED_INFLATED_OBSTACLE) {
-        return false;
+    if (path_cost == path_costs_.obstacleCosts() || path_cost == path_costs_.unreachableCellCosts() || occ_cost >= costmap_2d::INSCRIBED_INFLATED_OBSTACLE)
+    {
+      return false;
     }
 
     double resolution = planner_util_->getCostmap()->getResolution();
@@ -219,59 +230,60 @@ bool DWAPlanner::getCellCosts(int cx, int cy, float &path_cost, float &goal_cost
         gdist_scale_ * resolution * goal_cost +
         occdist_scale_ * occ_cost;
     return true;
-}
+  }
 
-bool DWAPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped> &orig_global_plan)
-{
+  bool DWAPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
+  {
     oscillation_costs_.resetOscillationFlags();
     return planner_util_->setPlan(orig_global_plan);
-}
+  }
 
-/**
- * This function is used when other strategies are to be applied,
- * but the cost functions for obstacles are to be reused.
- */
-bool DWAPlanner::checkTrajectory(Eigen::Vector3f pos,
-                                 Eigen::Vector3f vel,
-                                 Eigen::Vector3f vel_samples)
-{
+  /**
+   * This function is used when other strategies are to be applied,
+   * but the cost functions for obstacles are to be reused.
+   */
+  bool DWAPlanner::checkTrajectory(Eigen::Vector3f pos,
+                                   Eigen::Vector3f vel,
+                                   Eigen::Vector3f vel_samples)
+  {
     oscillation_costs_.resetOscillationFlags();
     base_local_planner::Trajectory traj;
     geometry_msgs::PoseStamped goal_pose = global_plan_.back();
     Eigen::Vector3f goal(goal_pose.pose.position.x, goal_pose.pose.position.y, tf::getYaw(goal_pose.pose.orientation));
     base_local_planner::LocalPlannerLimits limits = planner_util_->getCurrentLimits();
     generator_.initialise(pos,
-        vel,
-        goal,
-        &limits,
-        vsamples_);
+                          vel,
+                          goal,
+                          &limits,
+                          vsamples_);
     generator_.generateTrajectory(pos, vel, vel_samples, traj);
     double scale = collvoid_costs_.getScale();
     collvoid_costs_.setScale(0);
     double cost = scored_sampling_planner_.scoreTrajectory(traj, -1);
     collvoid_costs_.setScale(scale);
-    //if the trajectory is a legal one... the check passes
-    if(cost >= 0) {
+    // if the trajectory is a legal one... the check passes
+    if (cost >= 0)
+    {
       return true;
     }
     ROS_WARN("Invalid Trajectory %f, %f, %f, cost: %f", vel_samples[0], vel_samples[1], vel_samples[2], cost);
 
-    //otherwise the check fails
+    // otherwise the check fails
     return false;
-}
+  }
 
-
-/**
- * 目的是更新全局路径和局部成本
- * 设置全局路径，计算全局路径的成本
- */
-void DWAPlanner::updatePlanAndLocalCosts(tf::Stamped<tf::Pose> global_pose,
-                                         const std::vector<geometry_msgs::PoseStamped> &new_plan)
-{
+  /**
+   * 目的是更新全局路径和局部成本
+   * 设置全局路径，计算全局路径的成本
+   */
+  void DWAPlanner::updatePlanAndLocalCosts(tf::Stamped<tf::Pose> global_pose,
+                                           const std::vector<geometry_msgs::PoseStamped>& new_plan)
+  {
     global_plan_.resize(new_plan.size());
 
-    for (unsigned int i = 0; i < new_plan.size(); ++i) {
-        global_plan_[i] = new_plan[i];
+    for (unsigned int i = 0; i < new_plan.size(); ++i)
+    {
+      global_plan_[i] = new_plan[i];
     }
 
     // costs for going away from path
@@ -286,63 +298,93 @@ void DWAPlanner::updatePlanAndLocalCosts(tf::Stamped<tf::Pose> global_pose,
     geometry_msgs::PoseStamped goal_pose = global_plan_.back();
 
     Eigen::Vector3f pos(global_pose.getOrigin().getX(), global_pose.getOrigin().getY(), tf::getYaw(global_pose.getRotation()));
-       double sq_dist =
-                (pos[0] - goal_pose.pose.position.x) * (pos[0] - goal_pose.pose.position.x) +
-                (pos[1] - goal_pose.pose.position.y) * (pos[1] - goal_pose.pose.position.y);
+    double sq_dist =
+        (pos[0] - goal_pose.pose.position.x) * (pos[0] - goal_pose.pose.position.x) +
+        (pos[1] - goal_pose.pose.position.y) * (pos[1] - goal_pose.pose.position.y);
 
-        // we want the robot nose to be drawn to its final position
-        // (before robot turns towards goal orientation), not the end of the
-        // path for the robot center. Choosing the final position after
-        // turning towards goal orientation causes instability when the
-        // robot needs to make a 180 degree turn at the end
-        // 稍微走远一点
-        std::vector<geometry_msgs::PoseStamped> front_global_plan = global_plan_;
-        double angle_to_goal = atan2(goal_pose.pose.position.y - pos[1], goal_pose.pose.position.x - pos[0]);
-        front_global_plan.back().pose.position.x = front_global_plan.back().pose.position.x +
-                                                   forward_point_distance_ * cos(angle_to_goal);
-        front_global_plan.back().pose.position.y = front_global_plan.back().pose.position.y + forward_point_distance_ *
+    // we want the robot nose to be drawn to its final position
+    // (before robot turns towards goal orientation), not the end of the
+    // path for the robot center. Choosing the final position after
+    // turning towards goal orientation causes instability when the
+    // robot needs to make a 180 degree turn at the end
+    // 稍微走远一点
+    std::vector<geometry_msgs::PoseStamped> front_global_plan = global_plan_;
+    double angle_to_goal = atan2(goal_pose.pose.position.y - pos[1], goal_pose.pose.position.x - pos[0]);
+    front_global_plan.back().pose.position.x = front_global_plan.back().pose.position.x +
+                                               forward_point_distance_ * cos(angle_to_goal);
+    front_global_plan.back().pose.position.y = front_global_plan.back().pose.position.y + forward_point_distance_ *
                                                                                               sin(angle_to_goal);
 
-        goal_front_costs_.setTargetPoses(front_global_plan);
+    goal_front_costs_.setTargetPoses(front_global_plan);
 
-
-        // keeping the nose on the path
-        if (sq_dist > forward_point_distance_ * forward_point_distance_ ) { // 离目标点大于forward_point_distance_ * forward_point_distance_时，设置对齐成本
-            double resolution = planner_util_->getCostmap()->getResolution();
-            alignment_costs_.setScale(resolution * pdist_scale_ * 0.5); // 坚持在全局路径上的权重
-            // costs for robot being aligned with path (nose on path, not ju
-            alignment_costs_.setTargetPoses(global_plan_);
-        } else { // 关闭对齐成本
-            // once we are close to goal, trying to keep the nose close to anything destabilizes behavior.
-            alignment_costs_.setScale(0.0);
-        }
-    if (sq_dist > goal_heading_sq_dist_) { // 离目标点大于目标点的距离时，关闭对目标点的对齐成本
-        goal_alignment_cost_.setScale(0);
-
+    // keeping the nose on the path
+    if (sq_dist > forward_point_distance_ * forward_point_distance_)
+    { // 离目标点大于forward_point_distance_ * forward_point_distance_时，设置对齐成本
+      double resolution = planner_util_->getCostmap()->getResolution();
+      alignment_costs_.setScale(resolution * pdist_scale_ * 0.5); // 坚持在全局路径上的权重
+      // costs for robot being aligned with path (nose on path, not ju
+      alignment_costs_.setTargetPoses(global_plan_);
     }
-    else {
-        goal_alignment_cost_.setScale(std::max( 2 * (goal_heading_sq_dist_ - sq_dist)/goal_heading_sq_dist_, 1.0) * heading_bias_);
+    else
+    { // 关闭对齐成本
+      // once we are close to goal, trying to keep the nose close to anything destabilizes behavior.
+      alignment_costs_.setScale(0.0);
+    }
+    if (sq_dist > goal_heading_sq_dist_)
+    { // 离目标点大于目标点的距离时，关闭对目标点的对齐成本
+      goal_alignment_cost_.setScale(0);
+    }
+    else
+    {
+      goal_alignment_cost_.setScale(std::max(2 * (goal_heading_sq_dist_ - sq_dist) / goal_heading_sq_dist_, 1.0) * heading_bias_);
+    }
+  }
+
+  void DWAPlanner::footprintCallback(const geometry_msgs::PolygonStamped::ConstPtr& footprint)
+  {
+    std::vector<geometry_msgs::Point> footprint_spec;
+    for (unsigned int i = 0; i < footprint->polygon.points.size(); ++i)
+    {
+      geometry_msgs::Point32 p = footprint->polygon.points[i];
+      geometry_msgs::Point pt;
+      pt.x = p.x;
+      pt.y = p.y;
+      footprint_spec.push_back(pt);
+    }
+    footprint_spec_ = std::move(footprint_spec);
+    // SPDLOG_INFO("CDWA footprint size:{}, {}", footprint_spec.size(), footprint_string);
+  }
+
+  /*
+   * given the current state of the robot, find a good trajectory
+   */
+  base_local_planner::Trajectory DWAPlanner::findBestPath(tf::Stamped<tf::Pose> global_pose,
+                                                          tf::Stamped<tf::Pose> global_vel,
+                                                          tf::Stamped<tf::Pose>& drive_velocities,
+                                                          std::vector<geometry_msgs::Point> footprint_spec)
+  {
+    if (footprint_spec.size() != 0)
+    {
+      obstacle_costs_.setFootprint(footprint_spec);
+      SPDLOG_INFO("CDWA 使用传入的 footprint size:{}", footprint_spec.size());
+    }
+    else if (footprint_spec_.size() != 0)
+    {
+      obstacle_costs_.setFootprint(footprint_spec_);
+      SPDLOG_ERROR("CDWA footprint size is 0, use the footprint size {} from the costmap", footprint_spec_.size());
+    }
+    else
+    {
+      SPDLOG_ERROR("CDWA footprint size is 0, do not user obstacle_costs_");
+      double resolution = planner_util_->getCostmap()->getResolution();
+      obstacle_costs_.setScale(resolution);
     }
 
-    }
-
-
-
-/*
- * given the current state of the robot, find a good trajectory
- */
-base_local_planner::Trajectory DWAPlanner::findBestPath(tf::Stamped<tf::Pose> global_pose,
-                                                        tf::Stamped<tf::Pose> global_vel,
-                                                        tf::Stamped<tf::Pose> &drive_velocities,
-                                                        std::vector<geometry_msgs::Point> footprint_spec)
-{
-    obstacle_costs_.setFootprint(footprint_spec);
-
-    //make sure that our configuration doesn't change mid-run
+    // make sure that our configuration doesn't change mid-run
     boost::mutex::scoped_lock l(configuration_mutex_);
 
     Eigen::Vector3f pos(global_pose.getOrigin().getX(), global_pose.getOrigin().getY(), tf::getYaw(global_pose.getRotation())); // 当前位置
-    Eigen::Vector3f vel(global_vel.getOrigin().getX(), global_vel.getOrigin().getY(), tf::getYaw(global_vel.getRotation())); // 当前速度
+    Eigen::Vector3f vel(global_vel.getOrigin().getX(), global_vel.getOrigin().getY(), tf::getYaw(global_vel.getRotation()));    // 当前速度
     geometry_msgs::PoseStamped goal_pose = global_plan_.back();
     Eigen::Vector3f goal(goal_pose.pose.position.x, goal_pose.pose.position.y, tf::getYaw(goal_pose.pose.orientation)); // 目标位置
     base_local_planner::LocalPlannerLimits limits = planner_util_->getCurrentLimits();
@@ -350,66 +392,73 @@ base_local_planner::Trajectory DWAPlanner::findBestPath(tf::Stamped<tf::Pose> gl
     // prepare cost functions and generators for this run
     // 初始化所有的采样点
     generator_.initialise(pos,
-        vel,
-        goal,
-        &limits,
-        vsamples_);
+                          vel,
+                          goal,
+                          &limits,
+                          vsamples_);
 
     result_traj_.cost_ = -7;
     // find best trajectory by sampling and scoring the samples
     std::vector<base_local_planner::Trajectory> all_explored;
     scored_sampling_planner_.findBestTrajectory(result_traj_, &all_explored);
 
-    if (publish_traj_pc_) {
-        base_local_planner::MapGridCostPoint pt;
-        traj_cloud_->points.clear();
-        traj_cloud_->width = 0;
-        traj_cloud_->height = 0;
-        std_msgs::Header header;
-        pcl_conversions::fromPCL(traj_cloud_->header, header);
-        header.stamp = ros::Time::now();
-        traj_cloud_->header = pcl_conversions::toPCL(header);
+    if (publish_traj_pc_)
+    {
+      base_local_planner::MapGridCostPoint pt;
+      traj_cloud_->points.clear();
+      traj_cloud_->width = 0;
+      traj_cloud_->height = 0;
+      std_msgs::Header header;
+      pcl_conversions::fromPCL(traj_cloud_->header, header);
+      header.stamp = ros::Time::now();
+      traj_cloud_->header = pcl_conversions::toPCL(header);
 
-        for (std::vector<base_local_planner::Trajectory>::iterator t = all_explored.begin(); t != all_explored.end(); ++t) {
-            if (t->cost_ < 0)
-                continue;
+      for (std::vector<base_local_planner::Trajectory>::iterator t = all_explored.begin(); t != all_explored.end(); ++t)
+      {
+        if (t->cost_ < 0)
+          continue;
 
-            // Fill out the plan
-            for (unsigned int i = 0; i < t->getPointsSize(); ++i) {
-                double p_x, p_y, p_th;
-                t->getPoint(i, p_x, p_y, p_th);
-                pt.x = p_x;
-                pt.y = p_y;
-                pt.z = 0;
-                pt.path_cost = p_th;
-                pt.total_cost = t->cost_;
-                traj_cloud_->push_back(pt);
-            }
+        // Fill out the plan
+        for (unsigned int i = 0; i < t->getPointsSize(); ++i)
+        {
+          double p_x, p_y, p_th;
+          t->getPoint(i, p_x, p_y, p_th);
+          pt.x = p_x;
+          pt.y = p_y;
+          pt.z = 0;
+          pt.path_cost = p_th;
+          pt.total_cost = t->cost_;
+          traj_cloud_->push_back(pt);
         }
+      }
 
-        traj_cloud_pub_.publish(*traj_cloud_);
+      traj_cloud_pub_.publish(*traj_cloud_);
     }
 
     // verbose publishing of point clouds
-    if (publish_cost_grid_pc_) {
-        //we'll publish the visualization of the costs to rviz before returning our best trajectory
-        map_viz_.publishCostCloud(planner_util_->getCostmap());
+    if (publish_cost_grid_pc_)
+    {
+      // we'll publish the visualization of the costs to rviz before returning our best trajectory
+      map_viz_.publishCostCloud(planner_util_->getCostmap());
     }
 
     // debrief stateful scoring functions
     oscillation_costs_.updateOscillationFlags(pos, &result_traj_, planner_util_->getCurrentLimits().min_trans_vel);
 
-    //if we don't have a legal trajectory, we'll just command zero
-    if (result_traj_.cost_ < 0) {
-        drive_velocities.setIdentity();
-    } else {
-        tf::Vector3 start(result_traj_.xv_, result_traj_.yv_, 0);
-        drive_velocities.setOrigin(start);
-        tf::Matrix3x3 matrix;
-        matrix.setRotation(tf::createQuaternionFromYaw(result_traj_.thetav_));
-        drive_velocities.setBasis(matrix);
+    // if we don't have a legal trajectory, we'll just command zero
+    if (result_traj_.cost_ < 0)
+    {
+      drive_velocities.setIdentity();
+    }
+    else
+    {
+      tf::Vector3 start(result_traj_.xv_, result_traj_.yv_, 0);
+      drive_velocities.setOrigin(start);
+      tf::Matrix3x3 matrix;
+      matrix.setRotation(tf::createQuaternionFromYaw(result_traj_.thetav_));
+      drive_velocities.setBasis(matrix);
     }
 
     return result_traj_;
-}
+  }
 };

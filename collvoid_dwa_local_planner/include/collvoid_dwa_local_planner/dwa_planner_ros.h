@@ -130,6 +130,8 @@ private:
 
     void publishGlobalPlan(std::vector<geometry_msgs::PoseStamped> &path);
 
+    std::vector<geometry_msgs::Point> getRobotFootprint();
+
     bool clearCostmapsService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &resp);
     void clearCostmaps();
     tf::TransformListener *tf_; ///< @brief Used for transforming point clouds
