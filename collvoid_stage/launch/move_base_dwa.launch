@@ -31,7 +31,7 @@
         <param name="collvoid/base_frame" value="$(arg robot)/base_link" />
 
         <node pkg="collvoid_local_planner" type="MePublisher" name="me_publisher" />
-        <node pkg="collvoid_controller" type="position_share_controller_$(arg type).py" name="position_share_controller_candle" />
+        <node pkg="collvoid_controller" type="position_share_controller.py" name="position_share_controller" />
 
     </group>
 

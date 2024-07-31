@@ -132,6 +132,8 @@ private:
 
     std::vector<geometry_msgs::Point> getRobotFootprint();
 
+    std::vector<geometry_msgs::Point> footprint_spec_;
+
     bool clearCostmapsService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &resp);
     void clearCostmaps();
     tf::TransformListener *tf_; ///< @brief Used for transforming point clouds

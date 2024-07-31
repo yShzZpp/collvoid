@@ -88,6 +88,8 @@ namespace collvoid {
         goal_front_costs_->setXShift(forward_point_distance_);
         alignment_costs_->setXShift(forward_point_distance_);
         goal_heading_sq_dist_ = config.goal_sq_dist;
+        SPDLOG_INFO("CDWA ROSAgent: pdist_scale:[{}], path_costs:[{}], alignment_costs:[{}], goal_costs:[{}], goal_front_costs:[{}], obstacle_costs:[{}], forward_point_distance:[{}], goal_heading_sq_dist:[{}]",
+                    pdist_scale_, path_costs_->getScale(), alignment_costs_->getScale(), goal_costs_->getScale(), goal_front_costs_->getScale(), obstacle_costs_->getScale(), forward_point_distance_, goal_heading_sq_dist_);
 
 
         // obstacle costs can vary due to scaling footprint feature
@@ -108,6 +110,8 @@ namespace collvoid {
         left_pref_ = config.left_pref;
 
         use_dwa_score_ = config.use_dwa_scoring;
+        SPDLOG_INFO("CDWA ROSAgent orca:[{}], use_polygon_footprint:[{}], use_truncation:[{}], num_samples:[{}], type_vo:[{}], time_to_holo:[{}], min_error_holo:[{}], max_error_holo:[{}], trunc_time:[{}], left_pref:[{}], use_dwa_score:[{}]",
+                    orca_, use_polygon_footprint_, use_truncation_, num_samples_, type_vo_, time_to_holo_, min_error_holo_, max_error_holo_, trunc_time_, left_pref_, use_dwa_score_);
     }
 
 
@@ -254,7 +258,8 @@ namespace collvoid {
             footprint_lines_.clear();
             collvoid::Vector2 first = collvoid::Vector2(minkowski_footprint.at(0).x(),
                                                         minkowski_footprint.at(0).y());
-            collvoid::Vector2 old = collvoid::Vector2(minkowski_footprint.at(0).x(), minkowski_footprint.at(0).y());
+            collvoid::Vector2 old = collvoid::Vector2(minkowski_footprint.at(0).x(),
+                                                      minkowski_footprint.at(0).y());
             //add linesegments for footprint
             for (size_t i = 0; i < minkowski_footprint.size(); i++) {
                 collvoid::Vector2 point = collvoid::Vector2(minkowski_footprint.at(i).x(),

@@ -86,7 +86,7 @@ namespace collvoid_dwa_local_planner
     limits.trans_stopped_vel = config.trans_stopped_vel;
     limits.rot_stopped_vel = config.rot_stopped_vel;
     planner_util_.reconfigureCB(limits, config.restore_defaults);
-    SPDLOG_INFO("CDWA Planner: max_vel_x: {}, min_vel_x: {}, max_vel_y: {}, vx_samples: {}, vy_samples: {}, vth_samples: {}",
+    SPDLOG_INFO("DWAPlannerROS Planner: max_vel_x: {}, min_vel_x: {}, max_vel_y: {}, vx_samples: {}, vy_samples: {}, vth_samples: {}",
                 config.max_vel_x, config.min_vel_x, config.max_vel_y,
                 config.vx_samples, config.vy_samples, config.vth_samples);
 
@@ -109,7 +109,7 @@ namespace collvoid_dwa_local_planner
       tf_ = tf;
       costmap_ros_ = costmap_ros;
       costmap_ros_->getRobotPose(current_pose_);
-      SPDLOG_INFO("CDWA Initializing [{}], global_name: [{}], local_name: [{}], costmap global frame: [{}], costmap local frame: [{}], costmap footprint size: [{}], costmap size: [{}]",
+      SPDLOG_INFO("DWAPlannerROS Initializing [{}], global_name: [{}], local_name: [{}], costmap global frame: [{}], costmap local frame: [{}], costmap footprint size: [{}], costmap size: [{}]",
                   name, g_plan_pub_.getTopic(), l_plan_pub_.getTopic(),
                   costmap_ros_->getGlobalFrameID(), costmap_ros_->getBaseFrameID(), costmap_ros_->getRobotFootprint().size(),
                   costmap_ros_->getCostmap()->getSizeInCellsX() * costmap_ros_->getCostmap()->getSizeInCellsY());
@@ -125,7 +125,7 @@ namespace collvoid_dwa_local_planner
 
       if (private_nh.getParam("odom_topic", odom_topic_))
       {
-        SPDLOG_INFO("CDWA Subscribing to {} for odometry data", odom_topic_);
+        SPDLOG_INFO("DWAPlannerROS Subscribing to {} for odometry data", odom_topic_);
         odom_helper_.setOdomTopic(odom_topic_);
       }
 
@@ -137,6 +137,30 @@ namespace collvoid_dwa_local_planner
       dsrv_ = new dynamic_reconfigure::Server<DWAPlannerConfig>(private_nh);
       dynamic_reconfigure::Server<DWAPlannerConfig>::CallbackType cb = boost::bind(&DWAPlannerROS::reconfigureCB, this, _1, _2);
       dsrv_->setCallback(cb);
+
+      // footprint
+      footprint_spec_ = costmap_2d::makeFootprintFromParams(private_nh);
+      SPDLOG_INFO("DWAPlannerROS Planner: Footprint size: {}", footprint_spec_.size());
+      if (footprint_spec_.size() == 0)
+      {
+        geometry_msgs::Point point;
+        point.x = 0.42;
+        point.y = 0.26;
+        footprint_spec_.push_back(point);
+        point.x = -0.42;
+        point.y = 0.26;
+        footprint_spec_.push_back(point);
+        point.x = -0.42;
+        point.y = -0.26;
+        footprint_spec_.push_back(point);
+        point.x = 0.42;
+        point.y = -0.26;
+        footprint_spec_.push_back(point);
+        SPDLOG_INFO("DWAPlannerROS Planner: self write Footprint size: {}", footprint_spec_.size());
+      }
+      auto config = planner_util_.getCurrentLimits();
+      SPDLOG_INFO("DWAPlannerROS Planner: max_vel_x: {}, min_vel_x: {}, max_rot_vel: {}",
+                  config.max_vel_x, config.min_vel_x, config.max_rot_vel);
     }
     else
     {
@@ -200,14 +224,14 @@ namespace collvoid_dwa_local_planner
     if (!costmap_ros_->getRobotPose(current_pose_))
     {
       ROS_ERROR("Could not get robot pose");
-      SPDLOG_ERROR("CDWA Planner: Could not get robot pose");
+      SPDLOG_ERROR("DWAPlannerROS Planner: Could not get robot pose");
       return false;
     }
 
     if (latchedStopRotateController_.isGoalReached(&planner_util_, odom_helper_, current_pose_))
     {
       ROS_INFO("Goal reached");
-      SPDLOG_INFO("CDWA Planner: Goal reached");
+      SPDLOG_INFO("DWAPlannerROS Planner: Goal reached");
       return true;
     }
     else
@@ -235,6 +259,29 @@ namespace collvoid_dwa_local_planner
 
   std::vector<geometry_msgs::Point> DWAPlannerROS::getRobotFootprint()
   {
+    if (costmap_ros_ && costmap_ros_->getRobotFootprint().size() > 0)
+    {
+      // SPDLOG_INFO("使用costmap_ros_获取机器人轮廓");
+      return costmap_ros_->getRobotFootprint();
+    }
+    else if (costmap_ros_ && costmap_ros_->getRobotFootprintPolygon().points.size() > 0)
+    {
+      // SPDLOG_INFO("使用costmap_ros_获取机器人轮廓多边形");
+      std::vector<geometry_msgs::Point> footprint;
+      for (unsigned int i = 0; i < costmap_ros_->getRobotFootprintPolygon().points.size(); ++i)
+      {
+        geometry_msgs::Point point;
+        point.x = costmap_ros_->getRobotFootprintPolygon().points[i].x;
+        point.y = costmap_ros_->getRobotFootprintPolygon().points[i].y;
+        footprint.push_back(point);
+      }
+      return footprint;
+    }
+    else
+    {
+      // SPDLOG_INFO("使用footprint_spec_获取机器人轮廓");
+      return footprint_spec_;
+    }
   }
 
   // 计算速度
@@ -261,7 +308,7 @@ namespace collvoid_dwa_local_planner
     drive_cmds.frame_id_ = costmap_ros_->getBaseFrameID();
 
     // call with updated footprint
-    base_local_planner::Trajectory path = dp_->findBestPath(global_pose, robot_vel, drive_cmds, costmap_ros_->getRobotFootprint());
+    base_local_planner::Trajectory path = dp_->findBestPath(global_pose, robot_vel, drive_cmds, getRobotFootprint());
     // ROS_ERROR("Best: %.2f, %.2f, %.2f, %.2f", path.xv_, path.yv_, path.thetav_, path.cost_);
 
     /* For timing uncomment
@@ -284,7 +331,7 @@ namespace collvoid_dwa_local_planner
     {
       ROS_DEBUG_NAMED("collvoid_dwa_local_planner",
                       "The dwa local planner failed to find a valid plan, cost functions discarded all candidates. This can mean there is an obstacle too close to the robot.");
-      SPDLOG_ERROR("CDWA Planner: 无法找到有效的路径, costmap global_frame : [{}], local_frame : [{}], costmap x: [{}], y: [{}], width: [{}], height: [{}], footprint size: {}",
+      SPDLOG_ERROR("DWAPlannerROS Planner: 无法找到有效的路径, costmap global_frame : [{}], local_frame : [{}], costmap x: [{}], y: [{}], width: [{}], height: [{}], footprint size: {}",
                    costmap_ros_->getGlobalFrameID(), costmap_ros_->getBaseFrameID(),
                    costmap_ros_->getCostmap()->getOriginX(), costmap_ros_->getCostmap()->getOriginY(),
                    costmap_ros_->getCostmap()->getSizeInCellsX(), costmap_ros_->getCostmap()->getSizeInCellsY(),
@@ -297,7 +344,7 @@ namespace collvoid_dwa_local_planner
 
     ROS_DEBUG_NAMED("collvoid_dwa_local_planner", "A valid velocity command of (%.2f, %.2f, %.2f) was found for this cycle.",
                     cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.angular.z);
-    // SPDLOG_INFO("CDWA Planner: 有效的速度命令 ({}, {}, {})", cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.angular.z);
+    // SPDLOG_INFO("DWAPlannerROS Planner: 有效的速度命令 ({}, {}, {})", cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.angular.z);
 
     // Fill out the local plan
     for (unsigned int i = 0; i < path.getPointsSize(); ++i)

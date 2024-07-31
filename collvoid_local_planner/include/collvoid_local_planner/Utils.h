@@ -47,15 +47,15 @@ namespace collvoid {
     struct VO {
       Vector2 point;
 
-      Vector2 relative_position;
-      double combined_radius;
+      Vector2 relative_position;// 与障碍物的相对位置
+      double combined_radius; // 两个agent的半径之和
 
-      Vector2 left_leg_dir;
-      Vector2 right_leg_dir;
+      Vector2 left_leg_dir; // 左腿方向
+      Vector2 right_leg_dir; // 右腿方向
 
-      Vector2 trunc_line_center;
-      Vector2 trunc_left;
-      Vector2 trunc_right;
+      Vector2 trunc_line_center; // 截断线的中心
+      Vector2 trunc_left; // 截断线的左边
+      Vector2 trunc_right; // 截断线的右边
 
     };
 

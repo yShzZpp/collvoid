@@ -97,14 +97,12 @@ namespace collvoid_dwa_local_planner
     if (vx_samp <= 0)
     {
       ROS_WARN("You've specified that you don't want any samples in the x dimension. We'll at least assume that you want to sample one value... so we're going to set vx_samples to 1 instead");
-      SPDLOG_WARN("你指定了在x维度上不想有任何样本。我们至少假设你想采样一个值...所以我们将vx_samples设置为1");
       vx_samp = 1;
       config.vx_samples = vx_samp;
     }
 
     if (vy_samp <= 0)
     {
-      SPDLOG_WARN("你指定了在y维度上不想有任何样本。我们至少假设你想采样一个值...所以我们将vy_samples设置为1");
       ROS_WARN("You've specified that you don't want any samples in the y dimension. We'll at least assume that you want to sample one value... so we're going to set vy_samples to 1 instead");
       vy_samp = 1;
       config.vy_samples = vy_samp;
@@ -112,7 +110,6 @@ namespace collvoid_dwa_local_planner
 
     if (vth_samp <= 0)
     {
-      SPDLOG_WARN("你指定了在th维度上不想有任何样本。我们至少假设你想采样一个值...所以我们将vth_samples设置为1");
       ROS_WARN("You've specified that you don't want any samples in the th dimension. We'll at least assume that you want to sample one value... so we're going to set vth_samples to 1 instead");
       vth_samp = 1;
       config.vth_samples = vth_samp;
@@ -121,7 +118,7 @@ namespace collvoid_dwa_local_planner
     vsamples_[0] = vx_samp;
     vsamples_[1] = vy_samp;
     vsamples_[2] = vth_samp;
-    SPDLOG_INFO("==DWAPlanner vx_samples: {}, vy_samples: {}, vth_samples: {}, obs max_trans_vel: [{}], max_scaling_factor: [{}], scaling_speed: [{}]",
+    SPDLOG_INFO("DWAPlanner vx_samples: {}, vy_samples: {}, vth_samples: {}, obs max_trans_vel: [{}], max_scaling_factor: [{}], scaling_speed: [{}]",
                 vx_samp, vy_samp, vth_samp, config.max_trans_vel, config.max_scaling_factor, config.scaling_speed);
   }
 
@@ -366,18 +363,21 @@ namespace collvoid_dwa_local_planner
     if (footprint_spec.size() != 0)
     {
       obstacle_costs_.setFootprint(footprint_spec);
-      SPDLOG_INFO("CDWA 使用传入的 footprint size:{}", footprint_spec.size());
+      double resolution = planner_util_->getCostmap()->getResolution();
+      obstacle_costs_.setScale(resolution);
+      // SPDLOG_INFO("CDWA footprint size: {}, use obstacleCritic", footprint_spec.size());
     }
     else if (footprint_spec_.size() != 0)
     {
       obstacle_costs_.setFootprint(footprint_spec_);
-      SPDLOG_ERROR("CDWA footprint size is 0, use the footprint size {} from the costmap", footprint_spec_.size());
+      double resolution = planner_util_->getCostmap()->getResolution();
+      obstacle_costs_.setScale(resolution);
+      // SPDLOG_ERROR("CDWA footprint size is 0, use the footprint size {} from the costmap", footprint_spec_.size());
     }
     else
     {
-      SPDLOG_ERROR("CDWA footprint size is 0, do not user obstacle_costs_");
-      double resolution = planner_util_->getCostmap()->getResolution();
-      obstacle_costs_.setScale(resolution);
+      SPDLOG_ERROR("CDWA footprint size is 0, do not use obstacle_costs_");
+      obstacle_costs_.setScale(0.0f);
     }
 
     // make sure that our configuration doesn't change mid-run

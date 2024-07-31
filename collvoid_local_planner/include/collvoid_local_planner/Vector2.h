@@ -211,16 +211,17 @@ namespace collvoid {
         return vector1.x() * vector2.y() - vector1.y() * vector2.x();
     }
 
-    inline Vector2 normalize(const Vector2& vector){
+    inline Vector2 normalize(const Vector2& vector){ // 获取单位向量
         return vector / abs(vector);
     }
 
-    inline Vector2 normal(const Vector2& vector){
+    inline Vector2 normal(const Vector2& vector){ // 获取法单位向量
         return normalize(Vector2(vector.y(), -(vector.x())));
     }
 
+    // cos(θ) = (a*b) / (|a|*|b|
     inline double angleBetween(const Vector2& one, const Vector2& two) {
-        double dot_prod = one*two;
+        double dot_prod = one*two; // 点积
         double len1 = abs(one);
         double len2 = abs(two);
         return acos(dot_prod / (len1*len2));

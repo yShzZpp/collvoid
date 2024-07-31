@@ -16,14 +16,14 @@ namespace collvoid_scoring_function
         samples_pub_ = nh.advertise<visualization_msgs::MarkerArray>("samples", 1); // 发布采样的信息
         vo_pub_ = nh.advertise<visualization_msgs::Marker>("vo", 1); // 发布VO的信息
 
-        ros::NodeHandle co_nh("~/CollvoidScoring");
+        ros::NodeHandle co_nh("~/collvoid");
         use_truncation_ = co_nh.param("use_truncation", true); // 是否使用截断
-        trunc_time_ = co_nh.param("trunctime", 8.); // 10
+        trunc_time_ = co_nh.param("trunc_time", 8.); // 10
         use_polygon_footprint_ = co_nh.param("use_polygon_footprint", true);
         max_dist_vo_ = co_nh.param("max_dist_vo", 0.1); //1
         points_.clear();
         ROS_INFO("Collvoid Scoring init done! Trunctime %f, max_dist_vo %f", trunc_time_, max_dist_vo_);
-        SPDLOG_INFO("Collvoid Scoring init done! Trunctime {}, max_dist_vo {}", trunc_time_, max_dist_vo_);
+        SPDLOG_INFO("Collvoid Scoring init done! trunctime: [{}], max_dist_vo: [{}]", trunc_time_, max_dist_vo_);
         //holo_robot_ = false;
     }
 

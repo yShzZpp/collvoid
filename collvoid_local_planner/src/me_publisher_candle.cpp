@@ -32,7 +32,7 @@ MePublisher::MePublisher() {
 
 void MePublisher::init(ros::NodeHandle nh, tf::TransformListener *tf) {
     tf_ = tf;
-    ros::NodeHandle ns_nh("move_base_flex/local_costmap");
+    ros::NodeHandle ns_nh("local_costmap");
     ros::NodeHandle private_nh("collvoid");
 
     //set my id
@@ -46,7 +46,7 @@ void MePublisher::init(ros::NodeHandle nh, tf::TransformListener *tf) {
     ROS_INFO("My name is: %s, Eps: %f", my_id_.c_str(), eps_);
     getParam(private_nh, "use_polygon_footprint", &use_polygon_footprint_);
     getParam(private_nh, "holo_robot", &holo_robot_);
-    getParam(private_nh, "/robot_attribute/type", &robotType_);
+    // getParam(private_nh, "/robot_attribute/type", &robotType_);
     controlled_ = getParamDef(private_nh, "controlled", true);
 
     publish_me_period_ = getParamDef(private_nh, "publish_me_frequency", 10.0);
@@ -55,18 +55,18 @@ void MePublisher::init(ros::NodeHandle nh, tf::TransformListener *tf) {
     getFootprint(ns_nh);
 
     //Publishers
-    me_pub_ = nh.advertise<visualization_msgs::MarkerArray>("me", 1, true);
-    polygon_pub_ = nh.advertise<geometry_msgs::PolygonStamped>("convex_hull", 1, true);
+    me_pub_ = nh.advertise<visualization_msgs::MarkerArray>("/me", 1, true);
+    polygon_pub_ = nh.advertise<geometry_msgs::PolygonStamped>("/convex_hull", 1, true);
     position_share_pub_ = nh.advertise<collvoid_msgs::PoseTwistWithCovariance>("/position_share_me", 1);
 
 
     //Subscribers
-    particle_sub_= nh.subscribe("particlecloud_weighted", 1, &MePublisher::amclPoseArrayWeightedCallback, this);
-    odom_sub_ = nh.subscribe("odom", 1, &MePublisher::odomCallback, this);
+    particle_sub_= nh.subscribe("/particlecloud_weighted", 1, &MePublisher::amclPoseArrayWeightedCallback, this);
+    odom_sub_ = nh.subscribe("/odom", 1, &MePublisher::odomCallback, this);
 
     //Service provider
-    server_ = nh.advertiseService("get_me", &MePublisher::getMeCB, this);
-    SPDLOG_INFO("[MePublisher] base_frame:[{}], global_frame:[{}], eps:[{}], use_polygon_footprint:[{}], holo_robot:[{}], controlled:[{}], publish_me_frequency:[{}], odom:[{}], particlecloud_weighted:[{}], get_me:[{}], footprintSize:[{}], minkowski_footprintSize:[{}]",
+    server_ = nh.advertiseService("/get_me", &MePublisher::getMeCB, this);
+    SPDLOG_INFO("[MePublisher] base_frame:[{}], global_frame:[{}], eps:[{}], use_polygon_footprint:[{}], holo_robot:[{}], controlled:[{}], publish_me_period:[{}], odom:[{}], particlecloud_weighted:[{}], get_me:[{}], footprintSize:[{}], minkowski_footprintSize:[{}]",
                 base_frame_, global_frame_, eps_, use_polygon_footprint_, holo_robot_, controlled_, publish_me_period_, odom_sub_.getTopic(), particle_sub_.getTopic(), server_.getService(), footprint_msg_.polygon.points.size(), minkowski_footprint_.size());
     SPDLOG_INFO("nh: {}, ns_nh: {}, private_nh: {}", nh.getNamespace(), ns_nh.getNamespace(), private_nh.getNamespace());
 }
@@ -328,8 +328,6 @@ geometry_msgs::PolygonStamped MePublisher::createFootprintMsgFromVector2(const s
 
 
 void MePublisher::getFootprint(ros::NodeHandle private_nh){
-    if (robotType_ != "candle" && robotType_ != "BR205")
-      getParam(private_nh, "robot_radius", &uninflated_robot_radius_); //非烛光则读取robot_radius
     radius_ = uninflated_robot_radius_;
     std::string full_param_name;
     std::vector< geometry_msgs::Point > footprint;
