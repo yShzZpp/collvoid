@@ -29,8 +29,8 @@ class CreateRunFiles(object):
     settings = None
     visualize = False
     num_repetitions = 50
-    length = 0.4
-    width = 0.26
+    length = 0.8
+    width = 0.52
     robot_type = "candle"
     ncircles = 1 #使用多少个园来画出机器人的形状 0为使用长方形
 

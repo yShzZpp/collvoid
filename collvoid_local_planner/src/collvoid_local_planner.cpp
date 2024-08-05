@@ -112,6 +112,7 @@ namespace collvoid_local_planner {
 
             ros::NodeHandle nh("~/");
             clear_costmaps_srv_ = nh.advertiseService("clear_local_costmap", &CollvoidLocalPlanner::clearCostmapsService, this);
+            SPDLOG_INFO("Collvoid Local Planner initialized, odom topic: {} ,{} ,g_plan_pub: {}, l_plan_pub: {}", odom_topic_, name, g_plan_pub_.getTopic(), l_plan_pub_.getTopic());
 
 
             initialized_ = true;

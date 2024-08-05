@@ -4,6 +4,7 @@
 
 #include "collvoid_local_planner/collvoid_scoring_function.h"
 #include "cti_spdlog.h"
+#include "spdlog/spdlog.h"
 
 
 namespace collvoid_scoring_function
@@ -174,17 +175,17 @@ namespace collvoid_scoring_function
 
         double cost = calculateVelCosts(test_vel, me_->agent_vos_, me_->use_truncation_);
 
-        if (cost > 0.) {
+        if (cost > 0.) { // vo内有轨迹
             int n = (int)me_->agent_vos_.size();
             if (cost >= n * 2)
                 return -1;
             cost = 1 + (n * (n + 1) /2.) * 2./cost;
         }
 
-        else {
+        else { // vo内无轨迹
             cost = 0.4 * std::max(
                     (max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->agent_vos_, test_vel, use_truncation_, true), 0.))) /
-                    max_dist_vo_, 0.);
+                    max_dist_vo_, 0.); // 最远距离 - 离最近的agentvo的绝对值 （必定为非负数）
 
             cost += 0.5 * std::max((max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->human_vos_, test_vel, use_truncation_, true), 0.))) / max_dist_vo_, 0.);
             cost += 0.3 * std::max((max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->static_vos_, test_vel, use_truncation_, true), 0.))) / max_dist_vo_, 0.);

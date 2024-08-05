@@ -12,7 +12,7 @@
             <rosparam command="load" file="$(find collvoid_stage)/params/move_base_params_$(arg type).yaml" />
             <rosparam command="load" file="$(find collvoid_stage)/params/teb_local_planner_params.yaml" />
             <rosparam command="load" file="$(find collvoid_stage)/params/collvoid_config.yaml" />
-            <rosparam command="load" file="$(find collvoid_stage)/params/collvoid_common.yaml" ns="CollvoidLocalPlanner" />
+            <rosparam command="load" file="$(find collvoid_stage)/params/collvoid_common_$(arg type).yaml" ns="CollvoidLocalPlanner" />
             <remap from="map" to="/map" />
             <param name="~controlled" value="$(arg controlled)" />
             <param name="~tf_prefix" value="$(arg robot)" />
@@ -29,8 +29,8 @@
         <!--     <param name="~base_frame_id" value="$(arg robot)/base_link" /> -->
         <!-- </node> -->
 
-        <rosparam command="load" file="$(find collvoid_stage)/params/me_publisher_turtle.yaml"/>
-        <rosparam command="load" file="$(find collvoid_stage)/params/collvoid_common.yaml" ns="collvoid" />
+        <rosparam command="load" file="$(find collvoid_stage)/params/me_publisher_$(arg type).yaml"/>
+        <rosparam command="load" file="$(find collvoid_stage)/params/collvoid_common_$(arg type).yaml" ns="collvoid" />
         <param name="collvoid/base_frame" value="$(arg robot)/base_link" />
 
         <node pkg="collvoid_local_planner" type="MePublisher" name="me_publisher"  />

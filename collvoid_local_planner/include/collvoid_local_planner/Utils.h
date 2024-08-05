@@ -51,11 +51,11 @@ namespace collvoid {
       double combined_radius; // 两个agent的半径之和
 
       Vector2 left_leg_dir; // 左腿方向
-      Vector2 right_leg_dir; // 右腿方向
+      Vector2 right_leg_dir; // 右腿方向 障碍物的边界
 
       Vector2 trunc_line_center; // 截断线的中心
       Vector2 trunc_left; // 截断线的左边
-      Vector2 trunc_right; // 截断线的右边
+      Vector2 trunc_right; // 截断线的右边 截断超出特定时间内的预测位置
 
     };
 

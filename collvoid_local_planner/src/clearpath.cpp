@@ -43,18 +43,17 @@ namespace collvoid
     Vector2 min_left, min_right;                  //相对位置的最左和最右点
     double min_ang = 0.0;                         // 相对位置的最小角度
     double max_ang = 0.0;                         // 相对位置的最大角度
-    Vector2 rel_position = position2 - position1; //相对位置向量
+    Vector2 rel_position = position2 - position1; // 相对位置向量
 
-    Vector2 rel_position_normal = normal(rel_position); //相对位置的法向量
-    double min_dist = abs(rel_position);
+    Vector2 rel_position_normal = normal(rel_position); // 相对位置的法向量
+    double min_dist = abs(rel_position);                // 相对位置的最小距离,初始化为相对位置的模
     Vector2 null;
-    bool collision = true;
-    for (int i = 0; i < (int)mink_sum.size(); i++)
+    bool collision = true;                         //是否碰撞
+    for (int i = 0; i < (int)mink_sum.size(); i++) // 找出可能导致碰撞的最小角度和最大角度，确定碰撞区域的边界
     {
-
-      double angle = angleBetween(rel_position, rel_position + mink_sum[i]); // 点积法
-      if (rightOf(Vector2(0.0, 0.0), rel_position, rel_position + mink_sum[i]))
-      { //在右边
+      double angle = angleBetween(rel_position, rel_position + mink_sum[i]);    // 点积法 计算相对位置与mink_sum[i]的夹角
+      if (rightOf(Vector2(0.0, 0.0), rel_position, rel_position + mink_sum[i])) // 在右边
+      {
         if (-angle < min_ang)
         {
           min_right = rel_position + mink_sum[i];
@@ -73,14 +72,14 @@ namespace collvoid
                                                           rel_position + mink_sum[i], rel_position_normal);
 
       collvoid::Vector2 first = rel_position + mink_sum[i];
-      collvoid::Vector2 second = rel_position + mink_sum[(i + 1) % mink_sum.size()];
+      collvoid::Vector2 second = rel_position + mink_sum[(i + 1) % mink_sum.size()]; // 相对位置 加上连续两个点,代表一个线段
 
-      double dist = sqrt(distSqPointLineSegment(first, second, null));
-      if (signedDistPointToLineSegment(first, second, null) < 0)
+      double dist = sqrt(distSqPointLineSegment(first, second, null)); // 计算原点到线段的距离
+      if (signedDistPointToLineSegment(first, second, null) < 0)       // 如果原点到线段的距离小于0，说明原点在线段的左侧
       {
         // double dist = abs(project_on_rel_position);
         // if (project_on_rel_position * rel_position < -EPSILON) {
-        collision = false;
+        collision = false; // 如果有一个点在rel_position的左侧，说明没有碰撞
       }
 
       if (dist < min_dist)
@@ -89,14 +88,16 @@ namespace collvoid
       }
     }
 
-    if (collision)
+    if (collision) // 如果可能碰撞，则生成一个简单的速度障碍物
     {
       ROS_WARN_THROTTLE(1, "Maybe Collision?");
-      result.left_leg_dir = -normalize(rel_position_normal);
+      // SPDLOG_INFO("Maybe Collision?, null : ({},{}), p1: ({},{}), p2: ({},{}), rel: ({},{})",
+      //             null.x(), null.y(), position1.x(), position1.y(), position2.x(), position2.y(), rel_position.x(), rel_position.y());
+      result.left_leg_dir = -normalize(rel_position_normal); // 相对位置的法向量
       result.right_leg_dir = -result.left_leg_dir;
-      result.relative_position = rel_position;
-      result.combined_radius = abs(rel_position) - min_dist;
-      result.point = vel2;
+      result.relative_position = rel_position;               // 相对位置
+      result.combined_radius = abs(rel_position) - min_dist; // 相对位置的模减去最小距离
+      result.point = vel2;                                   // 障碍物的速度
       return result;
     }
 
@@ -104,13 +105,13 @@ namespace collvoid
     result.left_leg_dir = Vector2(cos(ang_rel + max_ang), sin(ang_rel + max_ang));
     result.right_leg_dir = Vector2(cos(ang_rel + min_ang), sin(ang_rel + min_ang));
 
-    result.left_leg_dir = rotateVectorByAngle(result.left_leg_dir, 0.05); // right pref was implemented here...
-    result.right_leg_dir = rotateVectorByAngle(result.right_leg_dir, -0.05);
+    result.left_leg_dir = rotateVectorByAngle(result.left_leg_dir, 0.1); // 右侧偏好
+    result.right_leg_dir = rotateVectorByAngle(result.right_leg_dir, -0.1);
 
-    double ang_between = angleBetween(result.right_leg_dir, result.left_leg_dir);
-    double opening_ang = ang_rel + min_ang + (ang_between) / 2.0;
+    double ang_between = angleBetween(result.right_leg_dir, result.left_leg_dir); // vo左右边界的夹角
+    double opening_ang = ang_rel + min_ang + (ang_between) / 2.0;                 // vo的中心方向
 
-    Vector2 dir_center = Vector2(cos(opening_ang), sin(opening_ang));
+    Vector2 dir_center = Vector2(cos(opening_ang), sin(opening_ang)); // vo的中心方向向量
     min_dist = abs(rel_position);
     Vector2 min_point = rel_position;
     for (int i = 0; i < (int)mink_sum.size(); i++)
@@ -338,9 +339,10 @@ namespace collvoid
     result.right_leg_dir = vo.right_leg_dir;
     result.relative_position = vo.relative_position;
     result.combined_radius = vo.combined_radius;
-    double trunc_radius = vo.combined_radius / time;
-    double angle_of_opening;
+    double trunc_radius = vo.combined_radius / time; // 截断半径
+    double angle_of_opening;                         // 开口角度
 
+    // 如果目标物体的相对距离小于合并半径，意味着障碍物可能已经在当前速度障碍区域内，即将发生碰撞。因此，将截断线的左右端点和中心点都设为当前的速度点 result.point。
     if (abs(vo.relative_position) < vo.combined_radius)
     {
       result.trunc_left = result.point;

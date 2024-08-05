@@ -63,12 +63,13 @@ void MePublisher::init(ros::NodeHandle nh, tf::TransformListener *tf) {
     //Subscribers
     particle_sub_= nh.subscribe("/particlecloud_weighted", 1, &MePublisher::amclPoseArrayWeightedCallback, this);
     odom_sub_ = nh.subscribe("/odom", 1, &MePublisher::odomCallback, this);
+    robot_state_sub_ = nh.subscribe("/robot_state", 1, &MePublisher::robotStateCallback, this);
 
     //Service provider
     server_ = nh.advertiseService("/get_me", &MePublisher::getMeCB, this);
     SPDLOG_INFO("[MePublisher] base_frame:[{}], global_frame:[{}], eps:[{}], use_polygon_footprint:[{}], holo_robot:[{}], controlled:[{}], publish_me_period:[{}], odom:[{}], particlecloud_weighted:[{}], get_me:[{}], footprintSize:[{}], minkowski_footprintSize:[{}]",
                 base_frame_, global_frame_, eps_, use_polygon_footprint_, holo_robot_, controlled_, publish_me_period_, odom_sub_.getTopic(), particle_sub_.getTopic(), server_.getService(), footprint_msg_.polygon.points.size(), minkowski_footprint_.size());
-    SPDLOG_INFO("nh: {}, ns_nh: {}, private_nh: {}", nh.getNamespace(), ns_nh.getNamespace(), private_nh.getNamespace());
+    SPDLOG_INFO("[MePublisher] nh: {}, ns_nh: {}, private_nh: {}", nh.getNamespace(), ns_nh.getNamespace(), private_nh.getNamespace());
 }
 
 bool MePublisher::getMeCB(collvoid_srvs::GetMe::Request &req, collvoid_srvs::GetMe::Response &res){
@@ -123,10 +124,40 @@ void MePublisher::amclPoseArrayWeightedCallback(const collvoid_msgs::PoseArrayWe
 
 }
 
+void MePublisher::robotStateCallback(const cti_msgs::BuildingRobotStateConstPtr& msg)
+{
+  using namespace cti_msgs;
+  if (msg->state == BuildingRobotState::STATE_MOUNT_BOX ||
+      msg->state == BuildingRobotState::STATE_UNMOUNT_BOX ||
+      msg->state == BuildingRobotState::STATE_NAVIGATIONING_LIFT ||
+      msg->state == BuildingRobotState::STATE_ENTERING_LIFE ||
+      msg->state == BuildingRobotState::STATE_LEAVEING_LIFE ||
+      msg->state == BuildingRobotState::STATE_NAVIGATIONING_PLACMENT ||
+      msg->state == BuildingRobotState::STATE_NAVIGATIONING_GATE ||
+      msg->state == BuildingRobotState::STATE_WAITTING_GATE_OPEN ||
+      msg->state == BuildingRobotState::STATE_CROSS_GATE ||
+      msg->state == BuildingRobotState::STATE_CHARGE_ENTER ||
+      msg->state == BuildingRobotState::STATE_CHARGE_LEAVE ||
+      msg->state == BuildingRobotState::STATE_FINDING_ALL_QR ||
+      msg->state == BuildingRobotState::STATE_DYNAMIC_DODGING ||
+      (msg->state >= 200 && msg->state < 300))
+  {
+    SPDLOG_INFO("I'm moving");
+    moving_ = true;
+  }
+  else
+  {
+    SPDLOG_INFO("I'm not moving");
+    moving_ = false;
+  }
+}
+
+
 void MePublisher::odomCallback(const nav_msgs::Odometry::ConstPtr &msg) {
     //we assume that the odometry is published in the frame of the base
     boost::mutex::scoped_lock(me_lock_);
     twist_.linear.x = msg->twist.twist.linear.x;
+  twist_.linear.x = msg->twist.twist.linear.x + (moving_ ? 0.02 : 0.);
     twist_.linear.y = msg->twist.twist.linear.y;
     twist_.angular.z = msg->twist.twist.angular.z;
 

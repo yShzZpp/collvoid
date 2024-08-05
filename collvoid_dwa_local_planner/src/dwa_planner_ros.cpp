@@ -231,7 +231,14 @@ namespace collvoid_dwa_local_planner
     if (latchedStopRotateController_.isGoalReached(&planner_util_, odom_helper_, current_pose_))
     {
       ROS_INFO("Goal reached");
-      SPDLOG_INFO("DWAPlannerROS Planner: Goal reached");
+      if (spdlog::default_logger_raw())
+      {
+        SPDLOG_INFO("DWAPlannerROS Planner: Goal reached");
+      }
+      else
+      {
+        ROS_INFO("=============================================");
+      }
       return true;
     }
     else

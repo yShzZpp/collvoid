@@ -178,7 +178,7 @@ namespace collvoid_dwa_local_planner
     collvoid_costs_.init(nh);
     double collvoid_scale;
     private_nh.param("collvoid_scale", collvoid_scale, 12.);
-    SPDLOG_INFO("[{}] freq: {}, collvoid_scale: {}", name, sim_period_, collvoid_scale);
+    SPDLOG_INFO("[{}] freq: {}, collvoid_scale: {}, global_frame_id: {}", name, sim_period_, collvoid_scale, frame_id);
 
     collvoid_costs_.setScale(collvoid_scale);
 

@@ -22,6 +22,7 @@
 #include "collvoid_local_planner/Vector2.h"
 #include "collvoid_local_planner/collvoid_publishers.h"
 #include "cti_spdlog.h"
+#include "cti_msgs/BuildingRobotState.h"
 
 
 using namespace collvoid;
@@ -37,6 +38,7 @@ private:
     void computeNewLocUncertainty();
     void amclPoseArrayWeightedCallback(const collvoid_msgs::PoseArrayWeighted::ConstPtr &msg);
     void odomCallback(const nav_msgs::Odometry::ConstPtr &msg);
+    void robotStateCallback(const cti_msgs::BuildingRobotStateConstPtr &msg);
     void publishMePoseTwist();
     bool compareConvexHullPointsPosition(const ConvexHullPoint &p1, const ConvexHullPoint &p2);
     void setMinkowskiFootprintVector2(geometry_msgs::PolygonStamped minkowski_footprint);
@@ -52,6 +54,7 @@ private:
     std::string my_id_, robotType_;
     std::string base_frame_, global_frame_;
     bool use_polygon_footprint_, holo_robot_, controlled_;
+    std::atomic_bool moving_;
     Vector2 holo_velocity_;
 
     double uninflated_robot_radius_, radius_, cur_loc_unc_radius_;
@@ -68,7 +71,7 @@ private:
 
     ros::Time last_seen_, last_time_me_published_;
     ros::Publisher position_share_pub_, polygon_pub_, me_pub_;
-    ros::Subscriber odom_sub_, particle_sub_;
+    ros::Subscriber odom_sub_, particle_sub_, robot_state_sub_;
     ros::ServiceServer server_;
     tf::TransformListener *tf_;
 
