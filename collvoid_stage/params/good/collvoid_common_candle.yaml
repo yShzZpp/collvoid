@@ -1,15 +1,14 @@
 ## For collvoid_scoring_function and me publisher
 global_frame_id: map
 # base_frame: /robot_0/base_link
-max_dist_vo: 0.50  #for scoring function scale
-dist_agent_vo_scale: 0.6  # 0.3
+max_dist_vo: 2.51  #for scoring function scale
+dist_agent_vo_scale: 0.3  # 0.3
 dist_human_vo_scale: 0.5  # 0.5
 dist_static_vo_scale: 0.4  # 0.4
-same_direction_scale: 0.0
 early_time: 0.0
 
 use_truncation: true
-trunc_time: 18.0 #13 18
+trunc_time: 18.0 #13
 publish_me_frequency: 10.0
 
 use_polygon_footprint: true # true #footprint or radius

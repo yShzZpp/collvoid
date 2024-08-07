@@ -1,4 +1,4 @@
-image: sim_map.pgm
+image: candle_map.pgm
 resolution: 0.050000
 origin: [-20.0000, -15.000, 0.000000]
 negate: 0

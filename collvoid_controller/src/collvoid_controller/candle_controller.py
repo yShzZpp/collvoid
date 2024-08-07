@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 import math
 import rospy
+import rospkg
+import yaml
 import tf.transformations
 from geometry_msgs.msg import PoseArray, Pose, Quaternion
 
@@ -14,12 +16,48 @@ from std_msgs.msg import String
 from std_srvs.srv import Empty
 from collvoid_msgs.msg import PoseTwistWithCovariance
 
+class Station():
+    def __init__(self):
+        rospack = rospkg.RosPack()
+        path = rospack.get_path('collvoid_stage')
+        with open('%s/params/stations.yaml' % path, 'r') as f:
+            stations = yaml.safe_load(f)
+        points = stations.keys()
+        self.pose_stations=dict()
+        for point in points:
+            self.pose_stations[point] = stations[point]
+    def getAllAreas(self):
+        areas=[]
+        for a in self.pose_stations:
+            areas.append(a)
+        return areas
+    def getPoints(self, area):
+        points=[]
+        for point in self.pose_stations[area]:
+            points.append(str(point))
+        return points
+
+
 
 class Controller(wx.Frame):
+    def getPresetComment(self):
+        rospack = rospkg.RosPack()
+        path = rospack.get_path('collvoid_stage')
+        with open('%s/params/preset.yaml' % path, 'r') as f:
+            presets_yaml = yaml.safe_load(f)
+        presets = presets_yaml.keys()
+        comment = []
+        for preset in presets:
+            comment.append(presets_yaml[preset].get('comment'))
+        return comment
+
+
+
     def __init__(self, parent, id, title):
         wx.Frame.__init__(self, parent, id, title)
         self.parent = parent
         self.initialized = False
+        self.station = Station()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
@@ -31,95 +69,68 @@ class Controller(wx.Frame):
 
         self.reset_srv = rospy.ServiceProxy('/reset_positions', Empty)
 
-        static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, "Controls"), wx.HORIZONTAL)
+        static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, "控制"), wx.HORIZONTAL)
         sizer.Add(static_sizer, 0)
 
-        start = wx.Button(self, wx.ID_ANY, label="Start!")
-        static_sizer.Add(start, 0)
-        self.Bind(wx.EVT_BUTTON, self.start, start)
-
-        stop = wx.Button(self, wx.ID_ANY, label="Stop!")
+        #  start = wx.Button(self, wx.ID_ANY, label="Start!")
+        #  static_sizer.Add(start, 0)
+        #  self.Bind(wx.EVT_BUTTON, self.start, start)
+        #
+        stop = wx.Button(self, wx.ID_ANY, label="停止")
         static_sizer.Add(stop, 0)
         self.Bind(wx.EVT_BUTTON, self.stop, stop)
 
-        reset = wx.Button(self, wx.ID_ANY, label="Reset!")
-        static_sizer.Add(reset, 0)
-        self.Bind(wx.EVT_BUTTON, self.reset, reset)
+        #  reset = wx.Button(self, wx.ID_ANY, label="Reset!")
+        #  static_sizer.Add(reset, 0)
+        #  self.Bind(wx.EVT_BUTTON, self.reset, reset)
 
         grid_sizer = wx.GridBagSizer()
-        static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, "choseRobots"), wx.HORIZONTAL)
+        static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, "自定义点位定位"), wx.HORIZONTAL)
         static_sizer.Add(grid_sizer, 0)
         sizer.Add(static_sizer, 0)
 
-        self.choiceBox = wx.Choice(self, wx.ID_ANY, choices=self.robotList)
-        self.choiceBox.SetSelection(0)
+        # 机器人
+        self.choiceRobotBox = wx.Choice(self, wx.ID_ANY, choices=self.robotList)
+        self.choiceRobotBox.SetSelection(0)
+        grid_sizer.Add(self.choiceRobotBox, pos=(0, 0), span=(1, 1), flag=wx.EXPAND)
 
-        grid_sizer.Add(self.choiceBox, (0, 0), (1, 2), wx.EXPAND)
+        # 区域
+        self.choiceAreaBox = wx.Choice(self, wx.ID_ANY, choices=self.station.getAllAreas())
+        self.choiceAreaBox.SetSelection(0)
+        grid_sizer.Add(self.choiceAreaBox, pos=(0, 2), span=(1, 1), flag=wx.EXPAND)
+        # 绑定区域选择事件
+        self.choiceAreaBox.Bind(wx.EVT_CHOICE, self.onAreaChoice)
+        # 点位
+        self.choicePointBox = wx.Choice(self, wx.ID_ANY, choices=[])
+        grid_sizer.Add(self.choicePointBox, pos=(0, 3), span=(1, 1), flag=wx.EXPAND)
         self.SetPosition(wx.Point(200, 200))
-        self.SetSize(wx.Size(600, 200))
+        self.SetSize(wx.Size(400, 200))
 
-        sendToE = wx.Button(self, wx.ID_ANY, label="Send to E")
-        grid_sizer.Add(sendToE, (3, 0))
-        self.Bind(wx.EVT_BUTTON, self.sendToE, sendToE)
+        initPose = wx.Button(self, wx.ID_ANY, label="定位")
+        grid_sizer.Add(initPose, (1, 0))
+        self.Bind(wx.EVT_BUTTON, self.initPose, initPose)
 
-        sendToF = wx.Button(self, wx.ID_ANY, label="Send to F")
-        grid_sizer.Add(sendToF, (3, 1))
-        self.Bind(wx.EVT_BUTTON, self.sendToF, sendToF)
+        move = wx.Button(self, wx.ID_ANY, label="移动")
+        grid_sizer.Add(move, (1, 2))
+        self.Bind(wx.EVT_BUTTON, self.move, move)
 
-        sendToG = wx.Button(self, wx.ID_ANY, label="Send to G")
-        grid_sizer.Add(sendToG, (3, 2))
-        self.Bind(wx.EVT_BUTTON, self.sendToG, sendToG)
+        static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, "预设"), wx.HORIZONTAL)
+        sizer.Add(static_sizer, 0)
 
-        sendToH = wx.Button(self, wx.ID_ANY, label="Send to H")
-        grid_sizer.Add(sendToH, (4, 1))
-        self.Bind(wx.EVT_BUTTON, self.sendToH, sendToH)
+        self.choicePresetBox = wx.Choice(self, wx.ID_ANY, choices=self.getPresetComment())
+        self.choicePresetBox.SetSelection(0)
+        #  grid_sizer.Add(self.choicePresetBox, pos=(3, 0), span=(1, 1), flag=wx.EXPAND)
+        static_sizer.Add(self.choicePresetBox, 0)
 
-        sendToI = wx.Button(self, wx.ID_ANY, label="Send to I")
-        grid_sizer.Add(sendToI, (4, 2))
-        self.Bind(wx.EVT_BUTTON, self.sendToI, sendToI)
+        initPreset = wx.Button(self, wx.ID_ANY, label="定位")
+        #  grid_sizer.Add(initPreset, (3, 1))
+        static_sizer.Add(initPreset, 2)
+        self.Bind(wx.EVT_BUTTON, self.initPreset, initPreset )
 
-
-
-        initFollowPose = wx.Button(self, wx.ID_ANY, label="Init follow")
-        grid_sizer.Add(initFollowPose, (4, 0))
-        self.Bind(wx.EVT_BUTTON, self.initFollowPose, initFollowPose)
-
-        #  self.delayTime = wx.TextCtrl(self, wx.ID_ANY, value=u"0")
-        #  grid_sizer.Add(self.delayTime, (4, 1))
-
-        initOppositePose1 = wx.Button(self, wx.ID_ANY, label="Init opposite1")
-        grid_sizer.Add(initOppositePose1, (5, 0))
-        self.Bind(wx.EVT_BUTTON, self.initOppositePose1, initOppositePose1)
-
-        sendOppositeGoal1 = wx.Button(self, wx.ID_ANY, label="Send opposite1 Goal")
-        grid_sizer.Add(sendOppositeGoal1, (5, 1))
-        self.Bind(wx.EVT_BUTTON, self.sendOppositeGoal1, sendOppositeGoal1)
-
-        initOppositePose2 = wx.Button(self, wx.ID_ANY, label="Init opposite2")
-        grid_sizer.Add(initOppositePose2, (6, 0))
-        self.Bind(wx.EVT_BUTTON, self.initOppositePose2, initOppositePose2)
-
-        sendOppositeGoal2 = wx.Button(self, wx.ID_ANY, label="Send opposite2 Goal")
-        grid_sizer.Add(sendOppositeGoal2, (6, 1))
-        self.Bind(wx.EVT_BUTTON, self.sendOppositeGoal2, sendOppositeGoal2)
-
-
-        initPoseOne = wx.Button(self, wx.ID_ANY, label="PoseOne: 0:A 1,2:B")
-        grid_sizer.Add(initPoseOne, (7, 0))
-        self.Bind(wx.EVT_BUTTON, self.initPoseOne, initPoseOne)
-
-        actionOne = wx.Button(self, wx.ID_ANY, label="ActionOne: 0->B A<-1,2")
-        grid_sizer.Add(actionOne, (7, 1))
-        self.Bind(wx.EVT_BUTTON, self.actionOne, actionOne)
-
-        initPoseTwo = wx.Button(self, wx.ID_ANY, label="PoseTwo: 0:A 1:B 2:C")
-        grid_sizer.Add(initPoseTwo, (8, 0))
-        self.Bind(wx.EVT_BUTTON, self.initPoseTwo, initPoseTwo)
-
-        actionTwo = wx.Button(self, wx.ID_ANY, label="ActionTwo: 0->B A<-1 2->D")
-        grid_sizer.Add(actionTwo, (8, 1))
-        self.Bind(wx.EVT_BUTTON, self.actionTwo, actionTwo)
-
+        movePreset = wx.Button(self, wx.ID_ANY, label="移动")
+        #  grid_sizer.Add(movePreset, (3, 2))
+        static_sizer.Add(movePreset, 2)
+        self.Bind(wx.EVT_BUTTON, self.movePreset, movePreset )
 
         grid_sizer.AddGrowableCol(0)
         self.SetSizer(sizer)
@@ -150,6 +161,25 @@ class Controller(wx.Frame):
 
         self.initialized = True
         self.services = []
+        self.initPointChoices()
+
+    def initPointChoices(self):
+        area = self.choiceAreaBox.GetStringSelection()
+        points = self.station.getPoints(area)
+        points.append("自适应")
+        self.choicePointBox.Clear()
+        self.choicePointBox.AppendItems(points)
+        if points:
+            self.choicePointBox.SetSelection(len(points)-1)
+
+    def onAreaChoice(self, event):
+        area = self.choiceAreaBox.GetStringSelection()
+        points = self.station.getPoints(area)
+        points.append("自适应")
+        self.choicePointBox.Clear()
+        self.choicePointBox.AppendItems(points)
+        if points:
+            self.choicePointBox.SetSelection(len(points)-1)
 
     def toggleServices(self, event):
         for s in self.services:
@@ -168,77 +198,43 @@ class Controller(wx.Frame):
             if msg.controlled:
                 s = rospy.ServiceProxy(msg.robot_id + '/toggle_active_collvoid', Empty)
                 self.services.append(s)
-            self.choiceBox.Append(msg.robot_id)
+            self.choiceRobotBox.Append(msg.robot_id)
 
-    def initFollowPose(self, event):
-        string = "%s follow pose" % self.choiceBox.GetStringSelection()
+    def initPose(self, event):
+        robot=self.choiceRobotBox.GetStringSelection()
+        area=self.choiceAreaBox.GetStringSelection()
+        point=self.choicePointBox.GetStringSelection()
+        if not point.isdigit():
+            string = "%s init %s" % (robot, area)
+        else:
+            string = "%s init %s-%s" % (robot, area, point)
         self.pub.publish(str(string))
 
-    def initPoseOne(self, event):
-        string = "%s pose one" % self.choiceBox.GetStringSelection()
-        self.pub.publish(str(string))
-    
-    def actionOne(self, event):
-        string = "%s action one" % self.choiceBox.GetStringSelection()
-        self.pub.publish(str(string))
-
-    def initPoseTwo(self, event):
-        string = "%s pose two" % self.choiceBox.GetStringSelection()
-        self.pub.publish(str(string))
-    
-    def actionTwo(self, event):
-        string = "%s action two" % self.choiceBox.GetStringSelection()
-        self.pub.publish(str(string))
-
-
-    def sendToE(self, event):
-        string = "%s to E" % self.choiceBox.GetStringSelection()
-        self.pub.publish(str(string))
-
-    def sendToF(self, event):
-        string = "%s to F" % self.choiceBox.GetStringSelection()
-        self.pub.publish(str(string))
-
-    def sendToG(self, event):
-        string = "%s to G" % self.choiceBox.GetStringSelection()
-        self.pub.publish(str(string))
-
-    def sendToH(self, event):
-        string = "%s to H" % self.choiceBox.GetStringSelection()
-        self.pub.publish(str(string))
-
-    def sendToI(self, event):
-        string = "%s to I" % self.choiceBox.GetStringSelection()
-        self.pub.publish(str(string))
-
-    def sendToJ(self, event):
-        string = "%s to J" % self.choiceBox.GetStringSelection()
+    def move(self, event):
+        robot=self.choiceRobotBox.GetStringSelection()
+        area=self.choiceAreaBox.GetStringSelection()
+        point=self.choicePointBox.GetStringSelection()
+        if not point.isdigit():
+            string = "%s move %s" % (robot, area)
+        else:
+            string = "%s move %s-%s" % (robot, area, point)
         self.pub.publish(str(string))
 
 
-    def sendOppositeGoal1(self, event):
-        string = "%s opposite1 Goal" % self.choiceBox.GetStringSelection()
+    def initPreset(self, event):
+        string = "%s Preseti %d" % (self.choiceRobotBox.GetStringSelection(), self.choicePresetBox.GetSelection())
         self.pub.publish(str(string))
 
-    def initOppositePose1(self, event):
-        string = "%s opposite1 pose" % self.choiceBox.GetStringSelection()
+    def movePreset(self, event):
+        string = "%s Presetm %d" % (self.choiceRobotBox.GetStringSelection(), self.choicePresetBox.GetSelection())
         self.pub.publish(str(string))
-
-    def initOppositePose2(self, event):
-        string = "%s opposite2 pose" % self.choiceBox.GetStringSelection()
-        self.pub.publish(str(string))
-
-    def sendOppositeGoal2(self, event):
-        string = "%s opposite2 Goal" % self.choiceBox.GetStringSelection()
-        self.pub.publish(str(string))
-
 
     def stop(self, event):
-        string = "%s Stop" % self.choiceBox.GetStringSelection()
+        string = "%s Stop" % self.choiceRobotBox.GetStringSelection()
         self.pub.publish(str(string))
 
     def start(self, event):
-        string = "%s next Goal" % self.choiceBox.GetStringSelection()
+        string = "%s next Goal" % self.choiceRobotBox.GetStringSelection()
         self.pub.publish(str(string))
 
     def all_start(self, event):

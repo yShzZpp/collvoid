@@ -30,6 +30,7 @@ class ControllerRobots(object):
     ground_truth = None
     zero_count = 0
     pose_stations = {}
+    preset = {}
 
     def __init__(self):
         self.stopped = True
@@ -86,11 +87,49 @@ class ControllerRobots(object):
 
         rospack = rospkg.RosPack()
         path = rospack.get_path('collvoid_stage')
-        with open('%s/stations.yaml' % path, 'r') as f:
+        with open('%s/params/stations.yaml' % path, 'r') as f:
             stations = yaml.safe_load(f)
         points = stations.keys()
         for point in points:
             self.pose_stations[point] = stations[point]
+
+        with open('%s/params/preset.yaml' % path, 'r') as f:
+            presets_yaml = yaml.safe_load(f)
+        presets = presets_yaml.keys()
+        for preset in presets:
+            self.preset[preset] = presets_yaml[preset]
+            #  robots = presets_yaml[preset].keys()
+            #  for robot in robots:
+            #      init = presets_yaml[preset][robot].get('init')
+            #      move = presets_yaml[preset][robot].get('init')
+            #      area, point = init.split('-')[0],init.split('-')[-1]
+            #      print area,point
+            #      self.preset[preset][robot]["init"][]
+            #
+    def execute_preset(self, preset, action):
+        if preset >= len(self.preset):
+            print "no % preset", preset
+        elif action == "move":
+            robots = self.preset[preset].keys()
+            if self.hostname not in robots:
+                print "% no in %" % (self.hostname, self.preset)
+                return
+            move = self.preset[preset][self.hostname].get('move')
+            area, point = move.split('-')[0], int(move.split('-')[-1])
+            print "move to %s %s" % (area, point)
+            pose = self.get_pose_stamped(area, point)
+            self.sample_goal_pub.publish(pose)
+        elif action == "init":
+            robots = self.preset[preset].keys()
+            if self.hostname not in robots:
+                print "% no in %" % (self.hostname, self.preset)
+                return
+            init = self.preset[preset][self.hostname].get('init')
+            area, point = init.split('-')[0], int(init.split('-')[-1])
+            print "init to %s %s" % (area, point)
+            self.pub_stage_pose.publish(self.get_pose(area, point))
+            self.pub_pose.publish(self.get_pose_with_covariance(area, point, self.covariance))
+
 
     def get_pose(self, station, index):
         pose = Pose2D()
@@ -100,6 +139,7 @@ class ControllerRobots(object):
         return pose
 
     def get_pose_stamped(self, station, index):
+        print type(station), type(index)
         pose = PoseStamped()
         pose.header.frame_id = "map"
         pose.header.stamp = rospy.Time.now()
@@ -254,11 +294,11 @@ class ControllerRobots(object):
 
     def publish_opposite_pose1(self, noise_cov, noise_std):
         if self.hostname == "robot_0":
-            self.pub_stage_pose.publish(self.get_pose('A', 0))
-            self.pub_pose.publish(self.get_pose_with_covariance('A', 0, noise_cov))
+            self.pub_stage_pose.publish(self.get_pose('A', 1))
+            self.pub_pose.publish(self.get_pose_with_covariance('A', 1, noise_cov))
         elif self.hostname == "robot_1":
-            self.pub_stage_pose.publish(self.get_pose('B', 0))
-            self.pub_pose.publish(self.get_pose_with_covariance('B', 0, noise_cov))
+            self.pub_stage_pose.publish(self.get_pose('B', 2))
+            self.pub_pose.publish(self.get_pose_with_covariance('B', 2, noise_cov))
         elif self.hostname == "robot_2":
             self.pub_stage_pose.publish(self.get_pose('C', 0))
             self.pub_pose.publish(self.get_pose_with_covariance('C', 0, noise_cov))
@@ -365,6 +405,41 @@ class ControllerRobots(object):
                 rospy.logwarn(e)
             rospy.sleep(0.2)
             self.publish_init_guess(self.covariance, self.noise_std)
+
+        if "init" in msg.data:
+            area=""
+            point = int(self.hostname.split('_')[-1])
+            if "-" in msg.data:
+                position = msg.data.split(' ')[-1]
+                area, point = position.split('-')[0], int(position.split('-')[1])
+            else:
+                area = msg.data.split(' ')[-1]
+            print area,point
+            self.pub_stage_pose.publish(self.get_pose(area, point))
+            self.pub_pose.publish(self.get_pose_with_covariance(area, point, self.covariance))
+
+        if "move" in msg.data:
+            area=""
+            point = int(self.hostname.split('_')[-1])
+            if "-" in msg.data:
+                position = msg.data.split(' ')[-1]
+                area, point = position.split('-')[0], int(position.split('-')[1])
+            else:
+                area = msg.data.split(' ')[-1]
+            print area,point
+            pose = self.get_pose_stamped(area, point)
+            self.sample_goal_pub.publish(pose)
+
+        if "Preseti" in msg.data:
+            preset = msg.data.split(' ')[-1]
+            self.execute_preset(int(preset), "init")
+
+        if "Presetm" in msg.data:
+            preset = msg.data.split(' ')[-1]
+            self.execute_preset(int(preset), "move")
+
+
+
 
         if "follow pose" in msg.data:
             self.publish_follow_pose(self.covariance, self.noise_std)

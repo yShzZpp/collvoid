@@ -18,41 +18,40 @@
 #include "collvoid_local_planner/Agent.h"
 #include "collvoid_local_planner/collvoid_publishers.h"
 
-
 using namespace collvoid;
 
 namespace collvoid_scoring_function
 {
 
-    using namespace base_local_planner;
+  using namespace base_local_planner;
 
-    class CollvoidScoringFunction : public TrajectoryCostFunction
-    {
+  class CollvoidScoringFunction : public TrajectoryCostFunction
+  {
     public:
-        CollvoidScoringFunction() {};
-        ~CollvoidScoringFunction() {};
+      CollvoidScoringFunction(){};
+      ~CollvoidScoringFunction(){};
 
-        void init(ros::NodeHandle nh);
-        bool prepare();
-        double scoreTrajectory(Trajectory &traj);
+      void init(ros::NodeHandle nh);
+      bool prepare();
+      double scoreTrajectory(Trajectory& traj);
 
     private:
-        bool getMe();
-        bool getNeighbors();
-        bool compareNeighborsPositions(const AgentPtr &agent1, const AgentPtr &agent2);
-        bool compareVectorPosition(const collvoid::Vector2 &v1, const collvoid::Vector2 &v2);
+      bool getMe();
+      bool getNeighbors();
+      bool compareNeighborsPositions(const AgentPtr& agent1, const AgentPtr& agent2);
+      bool compareVectorPosition(const collvoid::Vector2& v1, const collvoid::Vector2& v2);
 
-        AgentPtr createAgentFromMsg(collvoid_msgs::PoseTwistWithCovariance &msg);
+      AgentPtr createAgentFromMsg(collvoid_msgs::PoseTwistWithCovariance& msg);
 
-        AgentPtr me_;
-        bool use_truncation_, use_polygon_footprint_;
-        double trunc_time_, max_dist_vo_;
-        ros::Publisher vo_pub_, neighbors_pub_, samples_pub_;
-        ros::ServiceClient get_me_srv_, get_neighbors_srv_;
+      AgentPtr me_;
+      bool use_truncation_, use_polygon_footprint_, last_direction_;
+      double trunc_time_, max_dist_vo_, early_time_, dist_agent_vo_scale_, dist_static_vo_scale_, dist_human_vo_scale_;
+      double same_direction_scale_;
+      ros::Publisher vo_pub_, neighbors_pub_, samples_pub_;
+      ros::ServiceClient get_me_srv_, get_neighbors_srv_;
 
-        std::vector<VelocitySample> points_;
-    };
+      std::vector<VelocitySample> points_;
+  };
 }
 
-
-#endif //COLLVOID_LOCAL_PLANNER_COLLVOID_SCORING_FUNCTION_H
+#endif // COLLVOID_LOCAL_PLANNER_COLLVOID_SCORING_FUNCTION_H

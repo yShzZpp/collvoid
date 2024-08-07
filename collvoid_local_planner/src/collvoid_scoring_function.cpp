@@ -22,9 +22,15 @@ namespace collvoid_scoring_function
     trunc_time_ = co_nh.param("trunc_time", 8.);           // 10
     use_polygon_footprint_ = co_nh.param("use_polygon_footprint", true);
     max_dist_vo_ = co_nh.param("max_dist_vo", 0.1); // 1
+    dist_agent_vo_scale_ = co_nh.param("dist_agent_vo_scale", 0.3);
+    dist_human_vo_scale_ = co_nh.param("dist_hunman_vo_scale", 0.5);
+    dist_static_vo_scale_ = co_nh.param("dist_static_vo_scale", 0.4);
+    same_direction_scale_ = co_nh.param("same_direction_scale", 0.4);
+    early_time_ = co_nh.param("early_time", 0.0); // 计算平均速度提早的时间,预计多的速度
     points_.clear();
     ROS_INFO("Collvoid Scoring init done! Trunctime %f, max_dist_vo %f", trunc_time_, max_dist_vo_);
-    SPDLOG_INFO("Collvoid Scoring init done! trunctime: [{}], max_dist_vo: [{}]", trunc_time_, max_dist_vo_);
+    SPDLOG_INFO("Collvoid Scoring init done! name:[{}], trunctime: [{}], max_dist_vo: [{}]", co_nh.getNamespace(), trunc_time_, max_dist_vo_);
+    SPDLOG_INFO("Collvoid Scoring init done! same_direction_scale: {}", same_direction_scale_);
     // holo_robot_ = false;
   }
 
@@ -38,6 +44,7 @@ namespace collvoid_scoring_function
       me_->trunc_time_ = trunc_time_;
       me_->use_polygon_footprint_ = use_polygon_footprint_;
       me_->type_vo_ = HRVOS;
+      // SPDLOG_INFO("angle z :{}",me_->angle_z_);
 
       // ROS_INFO("GOT ME");
       //  SPDLOG_INFO("CDWA scoring: Got me");
@@ -113,6 +120,7 @@ namespace collvoid_scoring_function
       dif_x = msg.twist.twist.linear.x * cos(dif_ang / 2.0);
       dif_y = msg.twist.twist.linear.x * sin(dif_ang / 2.0);
       agent->velocity_ = rotateVectorByAngle(dif_x, dif_y, agent->heading_);
+      agent->angle_z_ = dif_ang;
     }
 
     return agent;
@@ -154,21 +162,26 @@ namespace collvoid_scoring_function
       return 0;
 
     // TODO: check if goalHeading and endPoint are in the same reference frame
-    double x, y, th;
-    double x_s, y_s, th_s;
-    traj.getEndpoint(x, y, th);       // 终点
-    traj.getPoint(0, x_s, y_s, th_s); // 起点
+    double x_s, y_s, th_s;                                   // 起点位姿态
+    double x_h, y_h, th_h;                                   // 中点
+    double x_e, y_e, th_e;                                   // 终点
+    traj.getPoint(0, x_s, y_s, th_s);                        // 起点
+    traj.getPoint(traj.getPointsSize() / 2, x_h, y_h, th_h); // 中点
+    traj.getEndpoint(x_e, y_e, th_e);                        // 终点
 
     // ROS_INFO("start orientation / end %f, %f", th_s,th);
 
     double time_diff = (int)traj.getPointsSize() * traj.time_delta_; // 步数*每一步的时间 = 采样点的总时间
+    time_diff = time_diff - 0.3 > 0 ? time_diff - 0.3 : time_diff;
+    double dx, dy, dtheta;
     double vel_x, vel_y, vel_theta;
-    vel_x = traj.xv_;
-    vel_y = traj.yv_;
-    vel_theta = traj.thetav_;
-    // vel_x = x - x_s; //
-    // vel_y = y - y_s;
-    // vel_theta = th - th_s;
+    double c_vel_x = me_->getVelocity().x(), c_vel_theta = me_->getVelocity().y();
+    // vel_x = traj.xv_;
+    // vel_y = traj.yv_;
+    // vel_theta = traj.thetav_;
+    dx = x_e - x_s; // 位置差
+    dy = y_e - y_s;
+    dtheta = th_e - th_s;
 
     Vector2 test_vel = Vector2();
     /*if (fabs(vel_y) == 0.) {
@@ -182,8 +195,10 @@ namespace collvoid_scoring_function
     else {
         test_vel = rotateVectorByAngle(vel_x, vel_y, me_->heading_);
     }*/
-    test_vel = rotateVectorByAngle(vel_x, vel_y, -th_s + me_->heading_ + vel_theta / 3.) / time_diff; 
+    // test_vel = rotateVectorByAngle(vel_x, vel_y, -th_s + me_->heading_ + vel_theta / 3.) / time_diff;
+    test_vel = rotateVectorByAngle(dx, dy, -th_s + me_->heading_ + dtheta / 3.) / time_diff; // 平均速度
     // test_vel = Vector2(vel_x,vel_y);
+    // test_vel = Vector2(x_h, y_h);
 
     double cost = calculateVelCosts(test_vel, me_->agent_vos_, me_->use_truncation_);
 
@@ -196,14 +211,21 @@ namespace collvoid_scoring_function
     }
 
     else
-    { // vo内无轨迹
-      cost = 0.4 * std::max(
-                       (max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->agent_vos_, test_vel, use_truncation_, true), 0.))) /
-                           max_dist_vo_,
-                       0.); // 最远距离 - 离最近的agentvo的绝对值 （必定为非负数）
-
-      cost += 0.5 * std::max((max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->human_vos_, test_vel, use_truncation_, true), 0.))) / max_dist_vo_, 0.);
-      cost += 0.3 * std::max((max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->static_vos_, test_vel, use_truncation_, true), 0.))) / max_dist_vo_, 0.);
+    { // vo内无轨迹// (最远距离阈值 - 离最近的agentvo平方根)/最远距离阈值 （必定为非负数）
+      cost = dist_agent_vo_scale_ * std::max((max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->agent_vos_, test_vel, use_truncation_, true), 0.))) / max_dist_vo_, 0.);
+      cost += dist_human_vo_scale_ * std::max((max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->human_vos_, test_vel, use_truncation_, true), 0.))) / max_dist_vo_, 0.);
+      cost += dist_static_vo_scale_ * std::max((max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->static_vos_, test_vel, use_truncation_, true), 0.))) / max_dist_vo_, 0.);
+      cost += same_direction_scale_ * (dtheta > 0);
+      if (cost < 0.)
+      {
+        SPDLOG_INFO("scoring {} is {}", th_s, cost);
+        return -1;
+      }
+      // cost += same_direction_scale_ * (me_->angle_z_ * th_s >= 0 ? 0 : 1); //同向为0 反向为1
+      // cost = std::max(std::min(cost + 0.3 * dtheta / 2, cost), 0.);
+      // cost += 1 * (angle < 0 ? -1 : 1);
+      // 速度取大的
+      // cost += 1.0 * (c_vel_x - test_vel.x());
     }
     VelocitySample v;
     v.velocity = test_vel;

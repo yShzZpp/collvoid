@@ -1,0 +1,80 @@
+map_type: voxel
+#Set the tolerance we're willing to have for tf transforms
+transform_tolerance: 0.3
+
+# footprint: [[-0.325, -0.325], [-0.325, 0.325], [0.325, 0.325], [0.46, 0.0], [0.325, -0.325]]
+footprint: [[0.40, 0.26], [-0.40, 0.26], [-0.40, -0.26], [0.40, -0.26]]  # if the robot is not circular
+# footprint: [[0.20, 0.13], [-0.20, 0.13], [-0.20, -0.13], [0.20, -0.13]]  # if the robot is not circular
+# robot_radius: 0.22
+footprint_nobox:
+ - {area_bit: 0, area: [[0.21, 0.32],   [0.42, 0.1]]}
+ - {area_bit: 1, area: [[-0.21, 0.32],  [0.42, 0.1]]}
+ - {area_bit: 2, area: [[-0.45, 0.185],  [0.1, -0.37]]}
+ - {area_bit: 3, area: [[-0.45, -0.185], [0.1, -0.37]]}
+ - {area_bit: 4, area: [[-0.21, -0.32], [0.42, 0.1]]}
+ - {area_bit: 5, area: [[0.21, -0.32],  [0.42, 0.1]]}
+ - {area_bit: 6, area: [[0.45, -0.16],  [0.16,  0.34]]}
+ - {area_bit: 7, area: [[0.45, 0.16],   [0.16, -0.34]]}
+
+# 带箱子Recovery footprint
+footprint_withbox:
+ - {area_bit: 0, area: [[0.23, 0.33],   [0.46, 0.12]]}
+ - {area_bit: 1, area: [[-0.23, 0.33],  [0.46, 0.12]]}
+ - {area_bit: 2, area: [[-0.45, 0.16],  [0.12, -0.32]]}
+ - {area_bit: 3, area: [[-0.45, -0.16], [0.12, -0.32]]}
+ - {area_bit: 4, area: [[-0.23, -0.33], [0.46, 0.12]]}
+ - {area_bit: 5, area: [[0.23, -0.33],  [0.46, 0.12]]}
+ - {area_bit: 6, area: [[0.45, -0.16],  [0.18,  0.32]]}
+ - {area_bit: 7, area: [[0.45, 0.16],   [0.18, -0.32]]}
+
+footprint_padding: 0.02
+
+static_layer:
+  enabled:              true
+  map_topic:            map
+
+obstacle_layer:
+  enabled:              true
+  max_obstacle_height:  2.0
+  origin_z:             0
+  z_resolution:         2
+  z_voxels:             1
+  unknown_threshold:    15
+  mark_threshold:       0
+  combination_method:   1
+  track_unknown_space:  true    #true needed for disabling global path planning through unknown space
+  obstacle_range: 2.5
+  raytrace_range: 3.0
+  publish_voxel_map: true
+  observation_sources: base_scan #python_node
+  base_scan:
+    data_type: LaserScan
+    topic: base_scan
+    expected_update_rate: 0.2
+    observation_persistence: 0.0
+    marking: true
+    clearing: true
+    min_obstacle_height: -0.1
+    max_obstacle_height: 2.
+
+stationary_robots:
+  enabled:              true
+  max_obstacle_height:  2.0
+  obstacle_range: 2
+  raytrace_range: 4.0
+  publish_voxel_map: true
+
+  observation_sources: python_node python_node_clearing
+  python_node_clearing:
+    data_type: LaserScan
+    topic: clearing_scan
+    observation_persistence: 0.0
+    marking: false
+    clearing: true
+
+  python_node:
+    data_type: PointCloud2
+    topic: stationary_robots
+    observation_persistence: 0.0
+    marking: true
+    clearing: false

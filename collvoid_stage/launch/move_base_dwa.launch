@@ -28,6 +28,7 @@
         </node>
 
         <rosparam command="load" file="$(find collvoid_stage)/params/me_publisher_$(arg type).yaml"/>
+        <rosparam command="load" file="$(find collvoid_stage)/params/collvoid_common_$(arg type).yaml" ns="move_base/collvoid" />
         <rosparam command="load" file="$(find collvoid_stage)/params/collvoid_common_$(arg type).yaml" ns="collvoid" />
         <param name="collvoid/base_frame" value="$(arg robot)/base_link" />
 

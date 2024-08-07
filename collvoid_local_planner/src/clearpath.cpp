@@ -105,8 +105,8 @@ namespace collvoid
     result.left_leg_dir = Vector2(cos(ang_rel + max_ang), sin(ang_rel + max_ang));
     result.right_leg_dir = Vector2(cos(ang_rel + min_ang), sin(ang_rel + min_ang));
 
-    result.left_leg_dir = rotateVectorByAngle(result.left_leg_dir, 0.1); // 右侧偏好
-    result.right_leg_dir = rotateVectorByAngle(result.right_leg_dir, -0.1);
+    result.left_leg_dir = rotateVectorByAngle(result.left_leg_dir, 0.15); // 右侧偏好
+    result.right_leg_dir = rotateVectorByAngle(result.right_leg_dir, -0.15);
 
     double ang_between = angleBetween(result.right_leg_dir, result.left_leg_dir); // vo左右边界的夹角
     double opening_ang = ang_rel + min_ang + (ang_between) / 2.0;                 // vo的中心方向
@@ -339,7 +339,7 @@ namespace collvoid
     result.right_leg_dir = vo.right_leg_dir;
     result.relative_position = vo.relative_position;
     result.combined_radius = vo.combined_radius;
-    double trunc_radius = vo.combined_radius / time; // 截断半径
+    double trunc_radius = vo.combined_radius / time; // 截断半径 时间越大 半径越短
     double angle_of_opening;                         // 开口角度
 
     // 如果目标物体的相对距离小于合并半径，意味着障碍物可能已经在当前速度障碍区域内，即将发生碰撞。因此，将截断线的左右端点和中心点都设为当前的速度点 result.point。

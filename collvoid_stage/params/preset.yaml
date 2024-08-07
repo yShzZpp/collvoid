@@ -1,0 +1,70 @@
+0:
+  comment: "在F区域相对行驶"
+  robot_0: 
+    init: "F-0"
+    move: "F-7"
+  robot_1:
+    init: "F-7"
+    move: "F-0"
+  robot_2:
+    init: "F-2"
+    move: "F-6"
+  robot_3:
+    init: "F-6"
+    move: "F-2"
+1:
+  comment: "在十字路口相对行驶"
+  robot_0: 
+    init: "A-0"
+    move: "B-0"
+  robot_1:
+    init: "B-0"
+    move: "A-0"
+  robot_2:
+    init: "C-1"
+    move: "D-1"
+  robot_3:
+    init: "D-1"
+    move: "C-1"
+2:
+  comment: "在十字路口左转行驶"
+  robot_0: 
+    init: "A-0"
+    move: "C-1"
+  robot_1:
+    init: "B-0"
+    move: "D-1"
+  robot_2:
+    init: "C-1"
+    move: "B-0"
+  robot_3:
+    init: "D-1"
+    move: "A-0"
+3:
+  comment: "离开E区域"
+  robot_0: 
+    init: "E-0"
+    move: "A-0"
+  robot_1:
+    init: "E-3"
+    move: "B-0"
+  robot_2:
+    init: "E-4"
+    move: "A-2"
+  robot_3:
+    init: "E-7"
+    move: "B-1"
+4:
+  comment: "在空旷的I区域相交行驶"
+  robot_0: 
+    init: "I-0"
+    move: "I-4"
+  robot_1:
+    init: "I-1"
+    move: "I-5"
+  robot_2:
+    init: "I-2"
+    move: "I-6"
+  robot_3:
+    init: "I-3"
+    move: "I-7"

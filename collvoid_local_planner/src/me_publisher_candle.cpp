@@ -142,12 +142,10 @@ void MePublisher::robotStateCallback(const cti_msgs::BuildingRobotStateConstPtr&
       msg->state == BuildingRobotState::STATE_DYNAMIC_DODGING ||
       (msg->state >= 200 && msg->state < 300))
   {
-    SPDLOG_INFO("I'm moving");
     moving_ = true;
   }
   else
   {
-    SPDLOG_INFO("I'm not moving");
     moving_ = false;
   }
 }

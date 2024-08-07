@@ -363,7 +363,7 @@ class RobotVisualizer(object):
 
     def saveStation(self):
         rospack = rospkg.RosPack()
-        path = rospack.get_path('road_control')
+        path = rospack.get_path('collvoid_stage')
         with open('%s/params/stations.yaml' % path, 'r') as f:
             stations = yaml.safe_load(f)
         stationKeys = stations.keys()
