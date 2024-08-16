@@ -6,6 +6,7 @@ import rospkg
 import yaml
 import tf.transformations
 from geometry_msgs.msg import PoseArray, Pose, Quaternion
+from std_srvs.srv import Empty
 
 try:
     import wx
@@ -65,7 +66,6 @@ class Controller(wx.Frame):
         self.pub = rospy.Publisher('/commands_robot', String, queue_size=10)
 
         self.robotList = []
-        self.robotList.append("all")
 
         self.reset_srv = rospy.ServiceProxy('/reset_positions', Empty)
 
@@ -90,7 +90,7 @@ class Controller(wx.Frame):
         sizer.Add(static_sizer, 0)
 
         # 机器人
-        self.choiceRobotBox = wx.Choice(self, wx.ID_ANY, choices=self.robotList)
+        self.choiceRobotBox = wx.Choice(self, wx.ID_ANY, choices=["all"])
         self.choiceRobotBox.SetSelection(0)
         grid_sizer.Add(self.choiceRobotBox, pos=(0, 0), span=(1, 1), flag=wx.EXPAND)
 
@@ -123,14 +123,23 @@ class Controller(wx.Frame):
         static_sizer.Add(self.choicePresetBox, 0)
 
         initPreset = wx.Button(self, wx.ID_ANY, label="定位")
-        #  grid_sizer.Add(initPreset, (3, 1))
         static_sizer.Add(initPreset, 2)
         self.Bind(wx.EVT_BUTTON, self.initPreset, initPreset )
 
         movePreset = wx.Button(self, wx.ID_ANY, label="移动")
-        #  grid_sizer.Add(movePreset, (3, 2))
         static_sizer.Add(movePreset, 2)
         self.Bind(wx.EVT_BUTTON, self.movePreset, movePreset )
+
+        static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, "其他"), wx.HORIZONTAL)
+        sizer.Add(static_sizer, 0)
+
+        clearLocalCostmap = wx.Button(self, wx.ID_ANY, label="清除localCostmap")
+        static_sizer.Add(clearLocalCostmap, 2)
+        self.Bind(wx.EVT_BUTTON, self.clearLocalCostmap,  clearLocalCostmap)
+        clearGlobalCostmap = wx.Button(self, wx.ID_ANY, label="清除globalCostmap")
+        static_sizer.Add(clearGlobalCostmap, 2)
+        self.Bind(wx.EVT_BUTTON, self.clearGlobalCostmap,  clearGlobalCostmap)
+
 
         grid_sizer.AddGrowableCol(0)
         self.SetSizer(sizer)
@@ -193,7 +202,7 @@ class Controller(wx.Frame):
         if not self.initialized:
             return
         if self.robotList.count(msg.robot_id) == 0:
-            rospy.loginfo("robot added")
+            rospy.loginfo("robot added %s" % msg.robot_id)
             self.robotList.append(msg.robot_id)
             if msg.controlled:
                 s = rospy.ServiceProxy(msg.robot_id + '/toggle_active_collvoid', Empty)
@@ -228,6 +237,45 @@ class Controller(wx.Frame):
     def movePreset(self, event):
         string = "%s Presetm %d" % (self.choiceRobotBox.GetStringSelection(), self.choicePresetBox.GetSelection())
         self.pub.publish(str(string))
+
+    def clearLocalCostmap(self, event):
+        for robot in self.robotList:
+            # 定义服务名称
+            service_name = '/%s/move_base/clear_local_costmap' % robot
+
+            # 打印当前正在清除的机器人
+
+            try:
+                # 创建服务代理
+                clear_service = rospy.ServiceProxy(service_name, Empty)
+
+                # 调用服务
+                clear_service()
+
+                # 打印成功消息
+            except rospy.ServiceException as e:
+                # 打印错误信息
+                rospy.logerr("%s 的 local costmap 清除失败: %s", robot, e)
+
+
+    def clearGlobalCostmap(self, event):
+        for robot in self.robotList:
+            # 定义服务名称
+            service_name = '/%s/move_base/clear_costmaps' % robot
+
+            # 打印当前正在清除的机器人
+
+            try:
+                # 创建服务代理
+                clear_service = rospy.ServiceProxy(service_name, Empty)
+
+                # 调用服务
+                clear_service()
+
+                # 打印成功消息
+            except rospy.ServiceException as e:
+                # 打印错误信息
+                rospy.logerr("%s 的 global costmap 清除失败: %s", robot, e)
 
     def stop(self, event):
         string = "%s Stop" % self.choiceRobotBox.GetStringSelection()
