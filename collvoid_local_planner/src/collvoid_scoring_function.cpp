@@ -4,6 +4,7 @@
 
 #include "collvoid_local_planner/collvoid_scoring_function.h"
 #include "cti_spdlog.h"
+#include "geometry_msgs/PoseArray.h"
 #include "spdlog/spdlog.h"
 
 namespace collvoid_scoring_function
@@ -15,8 +16,25 @@ namespace collvoid_scoring_function
     get_neighbors_srv_ = nh.serviceClient<collvoid_srvs::GetNeighbors>("get_neighbors"); // 获取邻居的信息：id，半径，是否全向移动，是否可控制，位置，速度，footprint
     neighbors_pub_ = nh.advertise<visualization_msgs::MarkerArray>("neighbors", 1);      // 发布邻居的信息
     samples_pub_ = nh.advertise<visualization_msgs::MarkerArray>("samples", 1);          // 发布采样的信息
+    mink_pub_ = nh.advertise<geometry_msgs::PolygonStamped>("mink", 1);                  // mink
+    center_pub_ = nh.advertise<geometry_msgs::PoseArray>("center", 1);                   // mink
     vo_pub_ = nh.advertise<visualization_msgs::Marker>("vo", 1);                         // 发布VO的信息
 
+    id_ = nh.param<std::string>("/robot_attribute/number", "robot");
+    use_sim_time_ = nh.param<bool>("/use_sim_time", false);
+    if (!nh.getParam("/robot_attribute/number", id_) && use_sim_time_)
+    {
+      id_ = nh.getNamespace();
+      if (strcmp(id_.c_str(), "/") == 0)
+      {
+        char hostname[1024];
+        hostname[1023] = '\0';
+        gethostname(hostname, 1023);
+        id_ = std::string(hostname);
+      }
+      // remove funky "/" to get uniform name in python and here
+      id_.erase(std::remove(id_.begin(), id_.end(), '/'), id_.end());
+    }
     ros::NodeHandle co_nh("~/collvoid");
     use_truncation_ = co_nh.param("use_truncation", true); // 是否使用截断
     trunc_time_ = co_nh.param("trunc_time", 8.);           // 10
@@ -30,7 +48,7 @@ namespace collvoid_scoring_function
     points_.clear();
     ROS_INFO("Collvoid Scoring init done! Trunctime %f, max_dist_vo %f", trunc_time_, max_dist_vo_);
     SPDLOG_INFO("Collvoid Scoring init done! name:[{}], trunctime: [{}], max_dist_vo: [{}]", co_nh.getNamespace(), trunc_time_, max_dist_vo_);
-    SPDLOG_INFO("Collvoid Scoring init done! same_direction_scale: {}", same_direction_scale_);
+    SPDLOG_INFO("Collvoid Scoring init done! same_direction_scale: [{}], use_sim_time: [{}]", same_direction_scale_, use_sim_time_);
     // holo_robot_ = false;
   }
 
@@ -95,17 +113,28 @@ namespace collvoid_scoring_function
   AgentPtr CollvoidScoringFunction::createAgentFromMsg(collvoid_msgs::PoseTwistWithCovariance& msg)
   {
     AgentPtr agent = AgentPtr(new Agent());
+    agent->id_ = msg.robot_id;
     agent->radius_ = msg.radius;
     agent->controlled_ = msg.controlled;
     agent->position_ = Vector2(msg.pose.pose.position.x, msg.pose.pose.position.y);
     agent->heading_ = tf::getYaw(msg.pose.pose.orientation);
+    double angle_between_me = agent->heading_;
 
     std::vector<Vector2> minkowski_footprint;
     for (geometry_msgs::Point32 p : msg.footprint.polygon.points)
     {
       minkowski_footprint.push_back(Vector2(p.x, p.y));
     }
-    agent->footprint_ = rotateFootprint(minkowski_footprint, agent->heading_);
+    if (me_ && me_->id_ != agent->id_)
+    {
+      angle_between_me = agent->heading_ - me_->heading_;
+      agent->footprint_ = rotateFootprint(minkowski_footprint, angle_between_me);
+    }
+    else
+    {
+      agent->footprint_ = rotateFootprint(minkowski_footprint, agent->heading_);
+    }
+    // agent->footprint_ = minkowski_footprint;
 
     if (msg.holo_robot)
     {
@@ -120,7 +149,8 @@ namespace collvoid_scoring_function
       dif_x = msg.twist.twist.linear.x * cos(dif_ang / 2.0);
       dif_y = msg.twist.twist.linear.x * sin(dif_ang / 2.0);
       agent->velocity_ = rotateVectorByAngle(dif_x, dif_y, agent->heading_);
-      agent->angle_z_ = dif_ang;
+      agent->angle_between_me_ = angle_between_me;
+      agent->anglez_ = dif_ang;
     }
 
     return agent;
@@ -144,6 +174,59 @@ namespace collvoid_scoring_function
 
     collvoid::publishVOs(me_->position_, me_->all_vos_, use_truncation_, "/map", "/map", vo_pub_);
     collvoid::publishPoints(me_->position_, points_, "/map", "/map", samples_pub_);
+
+    if (use_sim_time_ && me_->agent_neighbors_.size() > 0)
+    {
+      geometry_msgs::PolygonStamped mink;
+      mink.header.frame_id = id_ + "/base_link";
+      auto mink_sum = minkowskiSum(me_->footprint_, me_->agent_neighbors_.front()->footprint_);
+      // for (auto m : mink_sum)
+      for (auto m : mink_sum)
+      {
+        geometry_msgs::Point32 point;
+        point.x = m.x();
+        point.y = m.y();
+        mink.polygon.points.push_back(point);
+      }
+      mink_pub_.publish(mink);
+      if (me_->agent_vos_.size() > 0 || me_->static_vos_.size() > 0)
+      {
+        VO vo = me_->agent_vos_.size() > 0 ? me_->agent_vos_.front() : me_->static_vos_.front();
+        geometry_msgs::PoseArray poses;
+        geometry_msgs::Pose pose;
+        poses.header.frame_id = id_ + "/base_link";
+
+        pose.position.x = vo.left_leg_dir.x();
+        pose.position.y = vo.left_leg_dir.y();
+        poses.poses.push_back(pose);
+
+        pose.position.x = vo.trunc_left.x();
+        pose.position.y = vo.trunc_left.y();
+        poses.poses.push_back(pose);
+
+        pose.position.x = vo.trunc_line_center.x();
+        pose.position.y = vo.trunc_line_center.y();
+        poses.poses.push_back(pose);
+
+        pose.position.x = vo.point.x();
+        pose.position.y = vo.point.y();
+        poses.poses.push_back(pose);
+
+        pose.position.x = vo.trunc_right.x();
+        pose.position.y = vo.trunc_right.y();
+        poses.poses.push_back(pose);
+
+        pose.position.x = vo.right_leg_dir.x();
+        pose.position.y = vo.right_leg_dir.y();
+        poses.poses.push_back(pose);
+
+        pose.position.x = vo.relative_position.x();
+        pose.position.y = vo.relative_position.y();
+        poses.poses.push_back(pose);
+
+        center_pub_.publish(poses);
+      }
+    }
     // for (size_t i = 0; i < me_->all_vos_.size(); ++i) {
     //     VO v = me_->all_vos_.at(i);
     //     ROS_INFO("Origin %f %f", v.point.x(), v.point.y()) ;
@@ -154,6 +237,81 @@ namespace collvoid_scoring_function
     // Add constraints - Not necessary due to sampling?
     // SPDLOG_INFO("CDWA scoring: Prepared");
     return true;
+  }
+
+  // 归一化角度到[0, 2*PI]范围内
+  double normalizeAngle(double angle)
+  {
+    while (angle < 0)
+      angle += 2 * M_PI;
+    while (angle >= 2 * M_PI)
+      angle -= 2 * M_PI;
+    return angle;
+  }
+
+  // 计算角度差
+  double calculateAngleDifference(double angle1, double angle2)
+  {
+    double diff = std::fabs(normalizeAngle(angle1) - normalizeAngle(angle2));
+    if (diff > M_PI)
+      diff = 2 * M_PI - diff;
+    return diff;
+  }
+
+  // 计算朝向的成本
+  double calculateAngleCosts(const double heading1, const double heading2, const double anglez1, const double anglez2)
+  {
+    double cost = 1.0;
+
+    // 计算两个机器人头朝向的角度差 (map坐标系下)
+    double headingDiff = calculateAngleDifference(heading1, heading2);
+
+    // 计算两个机器人相对于各自坐标系的旋转方向
+    bool bothLeftOrRight = (anglez1 >= 0 && anglez2 >= 0) || (anglez1 < 0 && anglez2 < 0);
+    bool oneLeftOneRight = (anglez1 >= 0 && anglez2 < 0) || (anglez1 < 0 && anglez2 >= 0);
+
+    // 同向：角度差30度以内
+    if (headingDiff < M_PI / 6)
+    { // 30 degrees in radians
+      cost = 0.0;
+    }
+    // 相交：角度差30度到90度之间
+    else if (headingDiff >= M_PI / 6 && headingDiff <= M_PI / 2)
+    { // 30 to 90 degrees in radians
+      if (oneLeftOneRight)
+      {
+        cost = 0.0;
+      }
+    }
+    // 反向：角度差90度到180度之间
+    else if (headingDiff > M_PI / 2 && headingDiff <= M_PI)
+    { // 90 to 180 degrees in radians
+      if (bothLeftOrRight)
+      {
+        cost = 0.0;
+      }
+    }
+
+    return cost;
+  }
+
+  // 获取自身的footprint
+  std::vector<geometry_msgs::Point> CollvoidScoringFunction::getMeFootprint()
+  {
+    std::vector<geometry_msgs::Point> footprint;
+    if (!me_)
+    {
+      return footprint;
+    }
+    for (const auto& p : me_->footprint_)
+    {
+      // ROS_INFO("%s: ",me_->id_.c_str(), );
+      geometry_msgs::Point point;
+      point.x = p.x();
+      point.y = p.y();
+      footprint.push_back(point);
+    }
+    return footprint;
   }
 
   double CollvoidScoringFunction::scoreTrajectory(Trajectory& traj)
@@ -197,6 +355,7 @@ namespace collvoid_scoring_function
     }*/
     // test_vel = rotateVectorByAngle(vel_x, vel_y, -th_s + me_->heading_ + vel_theta / 3.) / time_diff;
     test_vel = rotateVectorByAngle(dx, dy, -th_s + me_->heading_ + dtheta / 3.) / time_diff; // 平均速度
+    // test_vel = rotateVectorByAngle(dx, dy, -th_s + me_->heading_ + dtheta / 3.); // 平均速度
     // test_vel = Vector2(vel_x,vel_y);
     // test_vel = Vector2(x_h, y_h);
 
@@ -211,11 +370,27 @@ namespace collvoid_scoring_function
     }
 
     else
-    { // vo内无轨迹// (最远距离阈值 - 离最近的agentvo平方根)/最远距离阈值 （必定为非负数）
-      cost = dist_agent_vo_scale_ * std::max((max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->agent_vos_, test_vel, use_truncation_, true), 0.))) / max_dist_vo_, 0.);
+    {
+      cost = 0;
+      int move_agent = 0;
+      for (const auto agent : me_->agent_neighbors_)
+      {
+        // 没有移动或距离小于2米不考虑
+        if (agent->getVelocity().x() < EPSILON || abs(agent->getPosition() - me_->getPosition()) < 2)
+        {
+          continue;
+        }
+        move_agent++;
+        cost += calculateAngleCosts(me_->heading_, agent->heading_, dtheta, agent->anglez_);
+      }
+      if (move_agent > 0)
+      {
+        cost = cost / move_agent * same_direction_scale_;
+      }
+      // vo内无轨迹// (最远距离阈值 - 离最近的agentvo平方根)/最远距离阈值 （必定为非负数）
+      cost += dist_agent_vo_scale_ * std::max((max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->agent_vos_, test_vel, use_truncation_, true), 0.))) / max_dist_vo_, 0.);
       cost += dist_human_vo_scale_ * std::max((max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->human_vos_, test_vel, use_truncation_, true), 0.))) / max_dist_vo_, 0.);
       cost += dist_static_vo_scale_ * std::max((max_dist_vo_ - sqrt(std::max(minDistToVOs(me_->static_vos_, test_vel, use_truncation_, true), 0.))) / max_dist_vo_, 0.);
-      cost += same_direction_scale_ * (dtheta > 0);
       if (cost < 0.)
       {
         SPDLOG_INFO("scoring {} is {}", th_s, cost);

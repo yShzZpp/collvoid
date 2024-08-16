@@ -87,7 +87,7 @@ namespace collvoid_dwa_local_planner
     path_alignment_cost_.setScale(path_scale_);
 
     // obstacle costs can vary due to scaling footprint feature
-    obstacle_costs_.setParams(config.max_trans_vel, config.max_scaling_factor, config.scaling_speed); // 最大水平速度，最大缩放因子，缩放速度
+    obstacle_costs_.setParams(config.max_trans_vel, config.max_scaling_factor, config.scaling_speed); // 最大水平速度，缩放footprint的因子，开始缩放footprint的速度
 
     int vx_samp, vy_samp, vth_samp;
     vx_samp = config.vx_samples;
@@ -360,24 +360,20 @@ namespace collvoid_dwa_local_planner
                                                           tf::Stamped<tf::Pose>& drive_velocities,
                                                           std::vector<geometry_msgs::Point> footprint_spec)
   {
+    // auto collvoid_footprint = collvoid_costs_.getMeFootprint();
+    // if (collvoid_footprint.size() != 0)
+    // {
+    //   obstacle_costs_.setFootprint(collvoid_footprint);
+    // }
     if (footprint_spec.size() != 0)
     {
       obstacle_costs_.setFootprint(footprint_spec);
-      double resolution = planner_util_->getCostmap()->getResolution();
-      obstacle_costs_.setScale(resolution);
       // SPDLOG_INFO("CDWA footprint size: {}, use obstacleCritic", footprint_spec.size());
     }
     else if (footprint_spec_.size() != 0)
     {
       obstacle_costs_.setFootprint(footprint_spec_);
-      double resolution = planner_util_->getCostmap()->getResolution();
-      obstacle_costs_.setScale(resolution);
       // SPDLOG_ERROR("CDWA footprint size is 0, use the footprint size {} from the costmap", footprint_spec_.size());
-    }
-    else
-    {
-      SPDLOG_ERROR("CDWA footprint size is 0, do not use obstacle_costs_");
-      obstacle_costs_.setScale(0.0f);
     }
 
     // make sure that our configuration doesn't change mid-run

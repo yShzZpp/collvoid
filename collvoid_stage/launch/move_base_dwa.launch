@@ -7,6 +7,7 @@
     <group ns="$(arg robot)">
 
 
+        <!-- <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen" launch-prefix="gdb -ex run - -args"> -->
         <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
             <rosparam command="load" file="$(find collvoid_stage)/params/costmap_common_$(arg type).yaml" ns="local_costmap" />
             <rosparam command="load" file="$(find collvoid_stage)/params/costmap_common_$(arg type).yaml" ns="global_costmap" />

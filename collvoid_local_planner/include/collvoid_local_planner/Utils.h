@@ -113,13 +113,13 @@ namespace collvoid {
      */
     inline double distSqPointLineSegment(const Vector2 &seg_a, const Vector2 &seg_b,
                                          const Vector2 &point) {
-      const double r = ((point - seg_a) * (seg_b - seg_a)) / absSqr(seg_b - seg_a);
+      const double r = ((point - seg_a) * (seg_b - seg_a)) / absSqr(seg_b - seg_a); // 计算point在ab线段上的投影
 
-      if (r < 0.0f) {
+      if (r < 0.0f) { // 投影点在线段ab外，且靠近A，最短距离是P到A的距离
         return absSqr(point - seg_a);
-      } else if (r > 1.0f) {
+      } else if (r > 1.0f) { // 投影点在ab外，且靠近B，最短距离是P到B的距离
         return absSqr(point - seg_b);
-      } else {
+      } else { // 头印第安在ab上，最短距离是P到投影点proj = a + r * (b-a)
         return absSqr(point - (seg_a + r * (seg_b - seg_a)));
       }
     }

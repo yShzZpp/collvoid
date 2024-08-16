@@ -34,6 +34,7 @@ namespace collvoid_scoring_function
       void init(ros::NodeHandle nh);
       bool prepare();
       double scoreTrajectory(Trajectory& traj);
+      std::vector<geometry_msgs::Point> getMeFootprint();
 
     private:
       bool getMe();
@@ -44,10 +45,11 @@ namespace collvoid_scoring_function
       AgentPtr createAgentFromMsg(collvoid_msgs::PoseTwistWithCovariance& msg);
 
       AgentPtr me_;
-      bool use_truncation_, use_polygon_footprint_, last_direction_;
+      bool use_truncation_, use_polygon_footprint_, last_direction_, use_sim_time_;
       double trunc_time_, max_dist_vo_, early_time_, dist_agent_vo_scale_, dist_static_vo_scale_, dist_human_vo_scale_;
       double same_direction_scale_;
-      ros::Publisher vo_pub_, neighbors_pub_, samples_pub_;
+      std::string id_;
+      ros::Publisher vo_pub_, neighbors_pub_, samples_pub_, mink_pub_, center_pub_;
       ros::ServiceClient get_me_srv_, get_neighbors_srv_;
 
       std::vector<VelocitySample> points_;

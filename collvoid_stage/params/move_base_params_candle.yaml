@@ -6,7 +6,7 @@ DWAPlannerROS:
   max_vel_y: 0.0  # diff drive robot
   min_vel_y: 0.0  # diff drive robot
   
-  max_trans_vel: 1.0 # choose slightly less than the base's capability
+  max_trans_vel: 0.6 # choose slightly less than the base's capability
   min_trans_vel: 0.10  # this is the min trans velocity when there is negligible rotational velocity
   trans_stopped_vel: 0.10 # 这是当机器人停止时的最小速度
 
@@ -31,13 +31,13 @@ DWAPlannerROS:
   sim_time: 2.8       # 1.7
   vx_samples: 10       # 3
   vy_samples: 1       # diff drive robot, there is only one sample
-  vtheta_samples: 10  # 20
+  vtheta_samples: 14  # 20
   prune_plan: true
   # Trajectory Scoring Parameters
-  path_distance_bias: 144.0      # 32.0   - weighting for how much it should stick to the global path plan
+  path_distance_bias: 44.0      # 32.0   - weighting for how much it should stick to the global path plan
   goal_distance_bias: 32.0      # 24.0   - wighting for how much it should attempt to reach its goal
-  collvoid_scale: 48.0
-  occdist_scale: 0.12           # 0.01   - weighting for how much the controller should avoid obstacles 障碍物权重
+  collvoid_scale: 60.0
+  occdist_scale: 2.12           # 0.01   - weighting for how much the controller should avoid obstacles 障碍物权重
   forward_point_distance: 0.1   # 0.325  - how far along to place an additional scoring point
   stop_time_buffer: 0.2         # 0.2    - amount of time a robot must stop in before colliding for a valid traj.
   scaling_speed: 0.25           # 0.25   - absolute velocity at which to start scaling the robot's footprint
@@ -102,12 +102,12 @@ CollvoidLocalPlanner:
 
 max_planning_retries: 5
 controller_frequency: 10.0    #5.0
-controller_patience: 8.0      #局部规划失败时间
+controller_patience: 5.0      #局部规划失败时间
 #
 planner_frequency: 1.0        #1.0
 planner_patience: 5.0         #全局规划失败时间
 #
-oscillation_timeout: 8.0     #震荡的时间
+oscillation_timeout: 3.0     #震荡的时间
 oscillation_distance: 0.15   #震荡距离
 
 #global_planner_frequency: 1
@@ -117,7 +117,7 @@ NavfnROS:
   default_tolerance: 0.3
 
 recovery_behaviors:
-  - {name: conservative_reset, type: clear_costmap_recovery/ClearCostmapRecovery}
+  # - {name: conservative_reset, type: clear_costmap_recovery/ClearCostmapRecovery}
   - {name: rotate_wiggle, type: collvoid_wiggle_recovery/WiggleRecovery}
   - {name: aggressive_reset, type: clear_costmap_recovery/ClearCostmapRecovery}
   - {name: rotate, type: rotate_recovery/RotateRecovery}
@@ -149,15 +149,15 @@ local_costmap:
   transform_tolerance: 0.5
   plugins:
   - {name: static_layer,            type: "costmap_2d::StaticLayer"}
-  - {name: obstacle_layer,      type: "costmap_2d::VoxelLayer"}
-  - {name: stationary_robots,          type: "costmap_2d::VoxelLayer"}
+  - {name: obstacle_layer,          type: "costmap_2d::VoxelLayer"}
+  # - {name: stationary_robots,          type: "costmap_2d::VoxelLayer"}
   # - {name: stationary_robots,          type: "costmap_2d::ObstacleLayer"}
   - {name: local_inflation_layer,     type: "costmap_2d::InflationLayer"}
   #cost_scaling_factor and inflation_radius were now moved to the inflation_layer ns
   local_inflation_layer:
     enabled:              true
-    cost_scaling_factor:  5.75  # exponential rate at which the obstacle cost drops off (default: 10) 越大值越小
-    inflation_radius:     2.25  # was 0.26 in previoys configuration
+    cost_scaling_factor:  10.00  # exponential rate at which the obstacle cost drops off (default: 10) 越大值越小
+    inflation_radius:     0.5  # was 0.26 in previoys configuration
 
 
 
@@ -169,14 +169,12 @@ global_costmap:
   static_map: true
   plugins:
   - {name: static_layer,            type: "costmap_2d::StaticLayer"}
-  - {name: obstacle_layer,      type: "costmap_2d::VoxelLayer"}
+  - {name: obstacle_layer,          type: "costmap_2d::VoxelLayer"}
   # - {name: stationary_robots,          type: "costmap_2d::ObstacleLayer"}
-  - {name: stationary_robots,          type: "costmap_2d::VoxelLayer"}
+  # - {name: stationary_robots,          type: "costmap_2d::VoxelLayer"}
   - {name: global_inflation_layer,     type: "costmap_2d::InflationLayer"}
   #cost_scaling_factor and inflation_radius were now moved to the inflation_layer ns
   global_inflation_layer:
     enabled:              true
     cost_scaling_factor:  10.0  # exponential rate at which the obstacle cost drops off (default: 10)
     inflation_radius:     0.8  # was 0.26 in previoys configuration
-
-

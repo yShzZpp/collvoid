@@ -389,4 +389,5 @@ namespace collvoid {
         line_pub.publish(line_list);
 
     }
+
 }

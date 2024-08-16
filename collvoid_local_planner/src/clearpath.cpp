@@ -28,6 +28,7 @@
  */
 
 #include "collvoid_local_planner/clearpath.h"
+#include "collvoid_local_planner/Vector2.h"
 #include <ros/ros.h>
 #include <float.h>
 
@@ -39,19 +40,21 @@ namespace collvoid
   {
     VO result;
     std::vector<Vector2> mink_sum = minkowskiSum(footprint1, footprint2); // minkowski和。计算两个障碍物轮廓和，表示可能的碰撞区域
+                                                                          // 这里的frame_id都是各自的坐标系，并非map
+                                                                          // x小 y小的排前面
 
-    Vector2 min_left, min_right;                  //相对位置的最左和最右点
-    double min_ang = 0.0;                         // 相对位置的最小角度
-    double max_ang = 0.0;                         // 相对位置的最大角度
-    Vector2 rel_position = position2 - position1; // 相对位置向量
+    Vector2 min_left, min_right;                  // 其他车与mink相加之后 离其他车最左点和最右点
+    double min_ang = 0.0;                         // 最右的角度
+    double max_ang = 0.0;                         // 最左的角度
+    Vector2 rel_position = position2 - position1; // 其他车的位置
 
-    Vector2 rel_position_normal = normal(rel_position); // 相对位置的法向量
-    double min_dist = abs(rel_position);                // 相对位置的最小距离,初始化为相对位置的模
+    Vector2 rel_position_normal = normal(rel_position); // 其他车方向的法向量
+    double min_dist = abs(rel_position);                // 其他车的点加mink点后最近的距离
     Vector2 null;
     bool collision = true;                         //是否碰撞
     for (int i = 0; i < (int)mink_sum.size(); i++) // 找出可能导致碰撞的最小角度和最大角度，确定碰撞区域的边界
     {
-      double angle = angleBetween(rel_position, rel_position + mink_sum[i]);    // 点积法 计算相对位置与mink_sum[i]的夹角
+      double angle = angleBetween(rel_position, rel_position + mink_sum[i]);    // 点积法 计算其他车与其他车+mink_sum[i]的夹角
       if (rightOf(Vector2(0.0, 0.0), rel_position, rel_position + mink_sum[i])) // 在右边
       {
         if (-angle < min_ang)
@@ -68,13 +71,13 @@ namespace collvoid
           max_ang = angle;
         }
       }
-      Vector2 project_on_rel_position = intersectTwoLines(Vector2(0.0, 0.0), rel_position,
-                                                          rel_position + mink_sum[i], rel_position_normal);
+      // Vector2 project_on_rel_position = intersectTwoLines(Vector2(0.0, 0.0), rel_position,
+      //                                                     rel_position + mink_sum[i], rel_position_normal);
 
       collvoid::Vector2 first = rel_position + mink_sum[i];
       collvoid::Vector2 second = rel_position + mink_sum[(i + 1) % mink_sum.size()]; // 相对位置 加上连续两个点,代表一个线段
 
-      double dist = sqrt(distSqPointLineSegment(first, second, null)); // 计算原点到线段的距离
+      double dist = sqrt(distSqPointLineSegment(first, second, null)); // 计算本车到线段的距离
       if (signedDistPointToLineSegment(first, second, null) < 0)       // 如果原点到线段的距离小于0，说明原点在线段的左侧
       {
         // double dist = abs(project_on_rel_position);
@@ -101,23 +104,24 @@ namespace collvoid
       return result;
     }
 
-    double ang_rel = atan2(rel_position.y(), rel_position.x());
-    result.left_leg_dir = Vector2(cos(ang_rel + max_ang), sin(ang_rel + max_ang));
-    result.right_leg_dir = Vector2(cos(ang_rel + min_ang), sin(ang_rel + min_ang));
+    double ang_rel = atan2(rel_position.y(), rel_position.x());                     // 与其他车的角度
+    result.left_leg_dir = Vector2(cos(ang_rel + max_ang), sin(ang_rel + max_ang));  // 左最远点 值不大于1仅计算单位长度,后续通过*3边长
+    result.right_leg_dir = Vector2(cos(ang_rel + min_ang), sin(ang_rel + min_ang)); // 右最远点
 
-    result.left_leg_dir = rotateVectorByAngle(result.left_leg_dir, 0.15); // 右侧偏好
-    result.right_leg_dir = rotateVectorByAngle(result.right_leg_dir, -0.15);
+    // result.left_leg_dir = rotateVectorByAngle(result.left_leg_dir, 0.15); // 右侧偏好
+    // result.right_leg_dir = rotateVectorByAngle(result.right_leg_dir, -0.15);
 
     double ang_between = angleBetween(result.right_leg_dir, result.left_leg_dir); // vo左右边界的夹角
     double opening_ang = ang_rel + min_ang + (ang_between) / 2.0;                 // vo的中心方向
+    // double opening_ang = ang_between;
 
     Vector2 dir_center = Vector2(cos(opening_ang), sin(opening_ang)); // vo的中心方向向量
-    min_dist = abs(rel_position);
-    Vector2 min_point = rel_position;
+    min_dist = abs(rel_position);                                     // 最近的距离 初始化为相对距离
+    Vector2 min_point = rel_position;                                 // 最近的点 初始化为其他车的位置
     for (int i = 0; i < (int)mink_sum.size(); i++)
     {
       Vector2 proj_on_center = intersectTwoLines(Vector2(0.0, 0.0), dir_center, rel_position + mink_sum[i],
-                                                 normal(dir_center));
+                                                 normal(dir_center)); // 计算 本车与vo中心的线段 与 其他车与凸包线段 相交的点
       if (abs(proj_on_center) < min_dist)
       {
         min_dist = abs(proj_on_center);
@@ -129,7 +133,7 @@ namespace collvoid
     double center_p, radius;
     Vector2 center_r;
     // test left/right
-    if (abs(min_left) < abs(min_right))
+    if (abs(min_left) < abs(min_right)) // 更靠近左边
     {
       center_p = abs(min_left) / cos(ang_between / 2.0);
       radius = tan(ang_between / 2.0) * abs(min_left);
@@ -845,6 +849,7 @@ namespace collvoid
     {
       result.push_back(convex_hull[i].point);
     }
+
     return result;
   }
 

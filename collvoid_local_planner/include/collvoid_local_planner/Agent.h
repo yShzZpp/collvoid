@@ -61,6 +61,7 @@ namespace collvoid{
         collvoid::Vector2 getVelocity();
 
         base_local_planner::LocalPlannerUtil *planner_util_;
+        std::string id_;
 
 
         //config
@@ -86,7 +87,7 @@ namespace collvoid{
         Vector2 position_;
         double heading_;
         Vector2 velocity_;
-        double angle_z_;
+        double angle_between_me_, anglez_;
 
         double radius_;
 
