@@ -1,7 +1,7 @@
 DWAPlannerROS:
   # Robot Configuration Parameters - Kobuki
   max_vel_x: 0.55  # 0.55
-  min_vel_x: -0.00
+  min_vel_x: -0.02
   
   max_vel_y: 0.0  # diff drive robot
   min_vel_y: 0.0  # diff drive robot
@@ -164,13 +164,13 @@ local_costmap:
 global_costmap:
   global_frame: map
   robot_base_frame: base_footprint
-  update_frequency: 1.0
+  update_frequency: 5.0
   publish_frequency: 1.0
   static_map: true
   plugins:
   - {name: static_layer,            type: "costmap_2d::StaticLayer"}
   - {name: obstacle_layer,          type: "costmap_2d::VoxelLayer"}
-  # - {name: stationary_robots,          type: "costmap_2d::ObstacleLayer"}
+  - {name: stationary_robots,          type: "costmap_2d::ObstacleLayer"}
   # - {name: stationary_robots,          type: "costmap_2d::VoxelLayer"}
   - {name: global_inflation_layer,     type: "costmap_2d::InflationLayer"}
   #cost_scaling_factor and inflation_radius were now moved to the inflation_layer ns
